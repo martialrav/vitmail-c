@@ -16,13 +16,20 @@ const Site = () => {
     if (site) {
       // Fetch workspace data client-side to avoid build issues
       fetch(`/api/workspace/site/${site}`)
-        .then(res => res.json())
+        .then(res => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error(`HTTP ${res.status}`);
+        })
         .then(data => {
           setWorkspace(data.workspace);
           setLoading(false);
         })
         .catch(error => {
           console.error('Error fetching workspace:', error);
+          // Set workspace to null to show 404 page
+          setWorkspace(null);
           setLoading(false);
         });
     }
