@@ -4,10 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 import Meta from '@/components/Meta';
-import {
-  getSiteWorkspace,
-  getWorkspacePaths,
-} from '@/prisma/services/workspace';
+import { getSiteWorkspace } from '@/prisma/services/site';
 
 const Site = ({ workspace }) => {
   const router = useRouter();
@@ -56,32 +53,31 @@ const Site = ({ workspace }) => {
   );
 };
 
-export const getStaticPaths = async () => {
-  const paths = await getWorkspacePaths();
-  return {
-    paths,
-    fallback: true,
-  };
-};
-
-export const getStaticProps = async ({ params }) => {
+export const getServerSideProps = async ({ params }) => {
   const { site } = params;
-  const siteWorkspace = await getSiteWorkspace(site, site.includes('.'));
-  let workspace = null;
+  
+  try {
+    const siteWorkspace = await getSiteWorkspace(site, site.includes('.'));
+    let workspace = null;
 
-  if (siteWorkspace) {
-    const { host } = new URL(process.env.APP_URL);
-    workspace = {
-      domains: siteWorkspace.domains,
-      name: siteWorkspace.name,
-      hostname: `${siteWorkspace.slug}.${host}`,
+    if (siteWorkspace) {
+      const { host } = new URL(process.env.APP_URL || 'http://localhost:3000');
+      workspace = {
+        domains: siteWorkspace.domains,
+        name: siteWorkspace.name,
+        hostname: `${siteWorkspace.slug}.${host}`,
+      };
+    }
+
+    return {
+      props: { workspace },
+    };
+  } catch (error) {
+    console.error('Error fetching workspace:', error);
+    return {
+      props: { workspace: null },
     };
   }
-
-  return {
-    props: { workspace },
-    revalidate: 10,
-  };
 };
 
 export default Site;

@@ -1,4 +1,4 @@
-import { InvitationStatus, TeamRole } from '@prisma/client';
+// Enums converted to strings for SQLite compatibility
 import slugify from 'slugify';
 
 import {
@@ -31,8 +31,8 @@ export const createWorkspace = async (creatorId, email, name, slug) => {
         create: {
           email,
           inviter: email,
-          status: InvitationStatus.ACCEPTED,
-          teamRole: TeamRole.OWNER,
+          status: 'ACCEPTED',
+          teamRole: 'OWNER',
         },
       },
       name,
@@ -89,7 +89,7 @@ export const getOwnWorkspace = async (id, email, slug) =>
           members: {
             some: {
               deletedAt: null,
-              teamRole: TeamRole.OWNER,
+              teamRole: 'OWNER',
               email,
             },
           },
@@ -200,7 +200,7 @@ export const getWorkspaces = async (id, email) =>
             some: {
               email,
               deletedAt: null,
-              status: InvitationStatus.ACCEPTED,
+              status: 'ACCEPTED',
             },
           },
         },
@@ -278,7 +278,7 @@ export const isWorkspaceCreator = (id, creatorId) => id === creatorId;
 export const isWorkspaceOwner = (email, workspace) => {
   let isTeamOwner = false;
   const member = workspace.members.find(
-    (member) => member.email === email && member.teamRole === TeamRole.OWNER
+    (member) => member.email === email && member.teamRole === 'OWNER'
   );
 
   if (member) {
@@ -306,7 +306,7 @@ export const joinWorkspace = async (workspaceCode, email) => {
         workspaceId: workspace.id,
         email,
         inviter: workspace.creatorId,
-        status: InvitationStatus.ACCEPTED,
+        status: 'ACCEPTED',
       },
       update: {},
       where: { email },

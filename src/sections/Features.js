@@ -22,7 +22,7 @@ const Features = () => {
             </div>
             <h3 className="text-xl font-bold text-vitamin-600">Domain Health Monitoring</h3>
             <p className="text-gray-600">
-              Check your domains against all major spam houses and get real-time health scores. 
+              Check your domains against all major spam houses and get real-time health scores.
               No more surprises in your inbox!
             </p>
           </div>
@@ -34,7 +34,7 @@ const Features = () => {
             </div>
             <h3 className="text-xl font-bold text-vitamin-600">Email Authentication</h3>
             <p className="text-gray-600">
-              Monitor SPF, DKIM, DMARC, and MX records. Get alerts when something&apos;s not quite right 
+              Monitor SPF, DKIM, DMARC, and MX records. Get alerts when something&apos;s not quite right
               with your email setup.
             </p>
           </div>
@@ -46,7 +46,7 @@ const Features = () => {
             </div>
             <h3 className="text-xl font-bold text-vitamin-600">Weekly Reports</h3>
             <p className="text-gray-600">
-              Get comprehensive weekly reports on all your domains. Track improvements, 
+              Get comprehensive weekly reports on all your domains. Track improvements,
               spot issues, and keep your email reputation healthy.
             </p>
           </div>
