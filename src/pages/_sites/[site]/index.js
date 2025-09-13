@@ -14,24 +14,37 @@ const Site = () => {
 
   useEffect(() => {
     if (site) {
-      // Fetch workspace data client-side to avoid build issues
-      fetch(`/api/workspace/site/${site}`)
-        .then(res => {
-          if (res.ok) {
-            return res.json();
-          }
-          throw new Error(`HTTP ${res.status}`);
-        })
-        .then(data => {
-          setWorkspace(data.workspace);
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error('Error fetching workspace:', error);
-          // Set workspace to null to show 404 page
-          setWorkspace(null);
-          setLoading(false);
-        });
+      // Check if this is a main domain request (should not be handled by this page)
+      const isMainDomain = site.includes('vercel.app') || site.includes('localhost') || site === 'vitmail-c.vercel.app' || site === 'vitmail-c';
+      
+      if (isMainDomain) {
+        // Redirect to main page for main domain requests
+        window.location.href = '/';
+        return;
+      }
+
+      // Only fetch workspace data for actual workspace subdomains
+      if (site && !isMainDomain) {
+        fetch(`/api/workspace/site/${site}`)
+          .then(res => {
+            if (res.ok) {
+              return res.json();
+            }
+            throw new Error(`HTTP ${res.status}`);
+          })
+          .then(data => {
+            setWorkspace(data.workspace);
+            setLoading(false);
+          })
+          .catch(error => {
+            console.error('Error fetching workspace:', error);
+            // Set workspace to null to show 404 page
+            setWorkspace(null);
+            setLoading(false);
+          });
+      } else {
+        setLoading(false);
+      }
     }
   }, [site]);
 
