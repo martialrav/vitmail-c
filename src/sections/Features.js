@@ -9,36 +9,45 @@ const Features = () => {
           <h2 className="text-4xl font-bold text-center">
             <span className="block">A better way to monitor your domains</span>
           </h2>
-          <p className="text-center text-gray-600">
-            Comprehensive domain health monitoring with vitamin C-inspired immunity for your email infrastructure
+          <p className="text-center text-gray-600 mt-4">
+            Just like Vitamin C boosts your immune system, Vitmail-C strengthens your domain&apos;s email infrastructure! 🍊
           </p>
         </div>
-        <div className="flex flex-col py-10 space-x-0 space-y-10 md:space-y-0 md:space-x-5 md:flex-row">
-          <div className="flex flex-col items-center justify-start px-5 space-y-3 md:w-1/3">
-            <div className="flex items-center justify-center w-16 h-16 bg-vitamin-100 rounded-full">
-              <span className="text-2xl">🏠</span>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+          {/* Feature 1 */}
+          <div className="flex flex-col items-center text-center space-y-4 p-6 bg-gradient-to-br from-vitamin-50 to-vitamin-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="w-16 h-16 bg-vitamin-100 rounded-full flex items-center justify-center">
+              <span className="text-2xl">🔍</span>
             </div>
-            <h3 className="text-lg font-bold">Spam House Detection</h3>
-            <p className="text-center text-gray-400">
-              Check if your domains are flagged across major spam databases and get instant alerts when issues arise.
+            <h3 className="text-xl font-bold text-vitamin-600">Domain Health Monitoring</h3>
+            <p className="text-gray-600">
+              Check your domains against all major spam houses and get real-time health scores. 
+              No more surprises in your inbox!
             </p>
           </div>
-          <div className="flex flex-col items-center justify-start px-5 space-y-3 md:w-1/3">
-            <div className="flex items-center justify-center w-16 h-16 bg-vitamin-100 rounded-full">
+
+          {/* Feature 2 */}
+          <div className="flex flex-col items-center text-center space-y-4 p-6 bg-gradient-to-br from-vitamin-50 to-vitamin-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="w-16 h-16 bg-vitamin-100 rounded-full flex items-center justify-center">
               <span className="text-2xl">🛡️</span>
             </div>
-            <h3 className="text-lg font-bold">Email Authentication</h3>
-            <p className="text-center text-gray-400">
-              Monitor SPF, DKIM, DMARC records and get recommendations to improve your email deliverability.
+            <h3 className="text-xl font-bold text-vitamin-600">Email Authentication</h3>
+            <p className="text-gray-600">
+              Monitor SPF, DKIM, DMARC, and MX records. Get alerts when something&apos;s not quite right 
+              with your email setup.
             </p>
           </div>
-          <div className="flex flex-col items-center justify-start px-5 space-y-3 md:w-1/3">
-            <div className="flex items-center justify-center w-16 h-16 bg-vitamin-100 rounded-full">
+
+          {/* Feature 3 */}
+          <div className="flex flex-col items-center text-center space-y-4 p-6 bg-gradient-to-br from-vitamin-50 to-vitamin-100 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
+            <div className="w-16 h-16 bg-vitamin-100 rounded-full flex items-center justify-center">
               <span className="text-2xl">📊</span>
             </div>
-            <h3 className="text-lg font-bold">Weekly Health Reports</h3>
-            <p className="text-center text-gray-400">
-              Get comprehensive weekly reports on your domain&apos;s health status with actionable insights and recommendations.
+            <h3 className="text-xl font-bold text-vitamin-600">Weekly Reports</h3>
+            <p className="text-gray-600">
+              Get comprehensive weekly reports on all your domains. Track improvements, 
+              spot issues, and keep your email reputation healthy.
             </p>
           </div>
         </div>
