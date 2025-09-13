@@ -10,7 +10,7 @@ import {
   text as inviteText,
 } from '@/config/email-templates/invitation';
 import { sendMail } from '@/lib/server/mail';
-import prisma from '@/prisma/index';
+import prisma from '@/lib/db';
 
 export const countWorkspaces = async (slug) =>
   await prisma.workspace.count({

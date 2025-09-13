@@ -1,4 +1,4 @@
-import prisma from '@/prisma/index';
+import prisma from '@/lib/db';
 
 export const createDomain = async (
   id,

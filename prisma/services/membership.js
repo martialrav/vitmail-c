@@ -1,5 +1,5 @@
-import { InvitationStatus } from '@prisma/client';
-import prisma from '@/prisma/index';
+// Enums converted to strings for SQLite compatibility
+import prisma from '@/lib/db';
 
 export const getMember = async (id) =>
   await prisma.member.findFirst({

@@ -1,6 +1,6 @@
 import { html, text } from '@/config/email-templates/email-update';
 import { sendMail } from '@/lib/server/mail';
-import prisma from '@/prisma/index';
+import prisma from '@/lib/db';
 
 export const deactivate = async (id) =>
   await prisma.user.update({
@@ -28,7 +28,7 @@ export const updateEmail = async (id, email, previousEmail) => {
   });
   await sendMail({
     html: html({ email }),
-    subject: `[Nextacular] Email address updated`,
+    subject: `[Vitmail-C] Email address updated`,
     text: text({ email }),
     to: [email, previousEmail],
   });
