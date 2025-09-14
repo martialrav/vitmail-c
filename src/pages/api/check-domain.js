@@ -38,8 +38,10 @@ export default async function handler(req, res) {
             let healthScore = 100;
             if (spamReputation.isListed) healthScore -= 30;
             if (!dnsRecords.spf.exists) healthScore -= 20;
+            if (dnsRecords.spf.hasMultiple) healthScore -= 10; // Penalty for multiple SPF records
             if (!dnsRecords.dkim.exists) healthScore -= 20;
             if (!dnsRecords.dmarc.exists) healthScore -= 15;
+            if (dnsRecords.dmarc.policy === 'none') healthScore -= 5; // Penalty for none policy
             if (!dnsRecords.mx.exists) healthScore -= 15;
 
             result = {
@@ -58,6 +60,7 @@ export default async function handler(req, res) {
                         { spamHouse: 'SURBL', isListed: spamReputation.details.surbl.isListed, reason: spamReputation.details.surbl.reason },
                         { spamHouse: 'URIBL', isListed: spamReputation.details.uribl.isListed, reason: spamReputation.details.uribl.reason }
                     ],
+                    flaggedHouses: spamReputation.flaggedHouses,
                     spf: dnsRecords.spf,
                     dkim: dnsRecords.dkim,
                     dmarc: dnsRecords.dmarc,
@@ -67,37 +70,60 @@ export default async function handler(req, res) {
             };
         } else {
             // Use mock data for demo purposes
+            const hasSpf = Math.random() > 0.3;
+            const hasDkim = Math.random() > 0.4;
+            const hasDmarc = Math.random() > 0.5;
+            const hasMx = Math.random() > 0.2;
+            const isFlagged = Math.random() > 0.9;
+            const hasMultipleSpf = hasSpf && Math.random() > 0.7;
+            const dmarcPolicy = hasDmarc ? (Math.random() > 0.5 ? 'quarantine' : Math.random() > 0.5 ? 'reject' : 'none') : 'none';
+
             result = {
                 domain,
                 healthScore: Math.floor(Math.random() * 40) + 60, // 60-100
                 lastChecked: new Date().toISOString(),
-                spamHouseStatus: Math.random() > 0.8 ? 'FLAGGED' : 'CLEAN',
-                spfRecord: Math.random() > 0.3,
-                dkimRecord: Math.random() > 0.4,
-                dmarcRecord: Math.random() > 0.5,
-                mxRecords: Math.random() > 0.2,
+                spamHouseStatus: isFlagged ? 'FLAGGED' : 'CLEAN',
+                spfRecord: hasSpf,
+                dkimRecord: hasDkim,
+                dmarcRecord: hasDmarc,
+                mxRecords: hasMx,
                 isHealthy: Math.random() > 0.3,
                 checks: {
                     spamHouse: [
-                        { spamHouse: 'SPAMHAUS', isListed: Math.random() > 0.9, reason: null },
-                        { spamHouse: 'SURBL', isListed: Math.random() > 0.95, reason: null },
-                        { spamHouse: 'URIBL', isListed: Math.random() > 0.9, reason: null }
+                        { spamHouse: 'SPAMHAUS', isListed: isFlagged && Math.random() > 0.5, reason: isFlagged ? 'Listed in DBL' : null },
+                        { spamHouse: 'SURBL', isListed: isFlagged && Math.random() > 0.5, reason: isFlagged ? 'Listed in SURBL' : null },
+                        { spamHouse: 'URIBL', isListed: isFlagged && Math.random() > 0.5, reason: isFlagged ? 'Listed in URIBL' : null }
                     ],
+                    flaggedHouses: isFlagged ? [
+                        { name: 'SPAMHAUS', reason: 'Listed in DBL', contact: 'https://www.spamhaus.org/contact/' }
+                    ] : [],
                     spf: {
-                        exists: Math.random() > 0.3,
-                        record: 'v=spf1 include:_spf.google.com ~all'
+                        exists: hasSpf,
+                        count: hasMultipleSpf ? 2 : hasSpf ? 1 : 0,
+                        records: hasSpf ? ['v=spf1 include:_spf.google.com ~all'] : [],
+                        hasMultiple: hasMultipleSpf,
+                        warning: hasMultipleSpf ? 'Multiple SPF records detected - this is not recommended and may cause issues' : null
                     },
                     dkim: {
-                        exists: Math.random() > 0.4,
-                        record: 'v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC...'
+                        exists: hasDkim,
+                        count: hasDkim ? Math.floor(Math.random() * 3) + 1 : 0,
+                        records: hasDkim ? ['v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC...'] : [],
+                        warning: !hasDkim ? 'No DKIM records found - consider setting up DKIM authentication' : null
                     },
                     dmarc: {
-                        exists: Math.random() > 0.5,
-                        record: `v=DMARC1; p=quarantine; rua=mailto:dmarc@${domain}`
+                        exists: hasDmarc,
+                        count: hasDmarc ? 1 : 0,
+                        records: hasDmarc ? [`v=DMARC1; p=${dmarcPolicy}; rua=mailto:dmarc@${domain}`] : [],
+                        policy: dmarcPolicy,
+                        percentage: 100,
+                        rua: hasDmarc ? `mailto:dmarc@${domain}` : null,
+                        warning: !hasDmarc ? 'No DMARC record found - consider setting up DMARC policy' :
+                            dmarcPolicy === 'none' ? 'DMARC policy is set to "none" - consider using "quarantine" or "reject" for better protection' : null
                     },
                     mx: {
-                        exists: Math.random() > 0.2,
-                        records: [{ priority: 10, exchange: `mail.${domain}` }]
+                        exists: hasMx,
+                        count: hasMx ? Math.floor(Math.random() * 3) + 1 : 0,
+                        records: hasMx ? [{ priority: 10, exchange: `mail.${domain}` }] : []
                     }
                 },
                 realData: false

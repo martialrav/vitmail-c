@@ -405,13 +405,18 @@ const DomainChecker = () => {
                                                             <XCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                                                         )}
                                                         <span className={`text-xs sm:text-sm font-medium ${result.checks.spf.exists ? 'text-green-600' : 'text-red-600'}`}>
-                                                            {result.checks.spf.exists ? 'Configured' : 'Missing'}
+                                                            {result.checks.spf.exists ? `Configured (${result.checks.spf.count})` : 'Missing'}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <p className="text-xs text-gray-600">
                                                     {result.checks.spf.exists ? '✅ Prevents email spoofing' : '❌ Vulnerable to spoofing'}
                                                 </p>
+                                                {result.checks.spf.warning && (
+                                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                        <p className="text-xs text-yellow-800">⚠️ {result.checks.spf.warning}</p>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className={`p-3 sm:p-4 rounded-xl border-2 ${result.checks.dkim.exists ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
@@ -424,13 +429,18 @@ const DomainChecker = () => {
                                                             <XCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                                                         )}
                                                         <span className={`text-xs sm:text-sm font-medium ${result.checks.dkim.exists ? 'text-green-600' : 'text-red-600'}`}>
-                                                            {result.checks.dkim.exists ? 'Configured' : 'Missing'}
+                                                            {result.checks.dkim.exists ? `Configured (${result.checks.dkim.count})` : 'Missing'}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <p className="text-xs text-gray-600">
                                                     {result.checks.dkim.exists ? '✅ Email integrity verified' : '❌ No email verification'}
                                                 </p>
+                                                {result.checks.dkim.warning && (
+                                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                        <p className="text-xs text-yellow-800">⚠️ {result.checks.dkim.warning}</p>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className={`p-3 sm:p-4 rounded-xl border-2 ${result.checks.dmarc.exists ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
@@ -443,13 +453,18 @@ const DomainChecker = () => {
                                                             <XCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                                                         )}
                                                         <span className={`text-xs sm:text-sm font-medium ${result.checks.dmarc.exists ? 'text-green-600' : 'text-red-600'}`}>
-                                                            {result.checks.dmarc.exists ? 'Configured' : 'Missing'}
+                                                            {result.checks.dmarc.exists ? `Configured (${result.checks.dmarc.policy})` : 'Missing'}
                                                         </span>
                                                     </div>
                                                 </div>
                                                 <p className="text-xs text-gray-600">
-                                                    {result.checks.dmarc.exists ? '✅ Advanced protection enabled' : '❌ Missing advanced protection'}
+                                                    {result.checks.dmarc.exists ? `✅ Policy: ${result.checks.dmarc.policy.toUpperCase()}` : '❌ Missing advanced protection'}
                                                 </p>
+                                                {result.checks.dmarc.warning && (
+                                                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                        <p className="text-xs text-yellow-800">⚠️ {result.checks.dmarc.warning}</p>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className={`p-3 sm:p-4 rounded-xl border-2 ${result.checks.mx.exists ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}`}>
@@ -462,7 +477,7 @@ const DomainChecker = () => {
                                                             <XCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
                                                         )}
                                                         <span className={`text-xs sm:text-sm font-medium ${result.checks.mx.exists ? 'text-green-600' : 'text-red-600'}`}>
-                                                            {result.checks.mx.exists ? 'Configured' : 'Missing'}
+                                                            {result.checks.mx.exists ? `Configured (${result.checks.mx.count})` : 'Missing'}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -472,6 +487,42 @@ const DomainChecker = () => {
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Spam House Details */}
+                                    {result.checks.flaggedHouses && result.checks.flaggedHouses.length > 0 && (
+                                        <div className="bg-red-50 rounded-2xl p-4 sm:p-6 border border-red-200">
+                                            <div className="text-center mb-4 sm:mb-6">
+                                                <h4 className="text-xl sm:text-2xl font-bold text-red-800 mb-2">
+                                                    🚨 Spam House Flags
+                                                </h4>
+                                                <p className="text-sm sm:text-base text-red-700 px-2">
+                                                    Your domain has been flagged by the following spam databases
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-3 sm:space-y-4">
+                                                {result.checks.flaggedHouses.map((house, index) => (
+                                                    <div key={index} className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-red-200">
+                                                        <span className="text-xl sm:text-2xl flex-shrink-0">🚨</span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="text-sm sm:text-base font-semibold text-red-800">{house.name}</p>
+                                                            <p className="text-xs sm:text-sm text-red-600 mb-2">{house.reason}</p>
+                                                            {house.contact && (
+                                                                <a
+                                                                    href={house.contact}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
+                                                                >
+                                                                    Contact {house.name} to request delisting →
+                                                                </a>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Recommendations */}
                                     <div className="bg-gradient-to-r from-vitamin-50 to-orange-50 rounded-2xl p-4 sm:p-6 border border-vitamin-200">
@@ -495,12 +546,32 @@ const DomainChecker = () => {
                                                 </div>
                                             )}
 
+                                            {result.checks.spf.hasMultiple && (
+                                                <div className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-yellow-200">
+                                                    <span className="text-xl sm:text-2xl flex-shrink-0">⚠️</span>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm sm:text-base font-semibold text-yellow-800">Fix Multiple SPF Records</p>
+                                                        <p className="text-xs sm:text-sm text-yellow-600">You have {result.checks.spf.count} SPF records. Consolidate them into a single record to avoid issues</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {!result.checks.dkim.exists && (
                                                 <div className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-vitamin-200">
                                                     <span className="text-xl sm:text-2xl flex-shrink-0">🔐</span>
                                                     <div className="min-w-0">
                                                         <p className="text-sm sm:text-base font-semibold text-gray-800">Set up DKIM Authentication</p>
                                                         <p className="text-xs sm:text-sm text-gray-600">Enable DKIM to verify email integrity and build trust</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {result.checks.dkim.exists && result.checks.dkim.count > 1 && (
+                                                <div className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-blue-200">
+                                                    <span className="text-xl sm:text-2xl flex-shrink-0">ℹ️</span>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm sm:text-base font-semibold text-blue-800">Multiple DKIM Records Found</p>
+                                                        <p className="text-xs sm:text-sm text-blue-600">You have {result.checks.dkim.count} DKIM records. This is normal for multiple email services</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -515,12 +586,22 @@ const DomainChecker = () => {
                                                 </div>
                                             )}
 
-                                            {result.spamHouseStatus === 'FLAGGED' && (
+                                            {result.checks.dmarc.exists && result.checks.dmarc.policy === 'none' && (
+                                                <div className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-yellow-200">
+                                                    <span className="text-xl sm:text-2xl flex-shrink-0">⚠️</span>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm sm:text-base font-semibold text-yellow-800">Strengthen DMARC Policy</p>
+                                                        <p className="text-xs sm:text-sm text-yellow-600">Your DMARC policy is set to "none". Consider using "quarantine" or "reject" for better protection</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {result.checks.flaggedHouses && result.checks.flaggedHouses.length > 0 && (
                                                 <div className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-red-200">
                                                     <span className="text-xl sm:text-2xl flex-shrink-0">🚨</span>
                                                     <div className="min-w-0">
                                                         <p className="text-sm sm:text-base font-semibold text-red-800">Remove from Spam Databases</p>
-                                                        <p className="text-xs sm:text-sm text-red-600">Contact spam databases to request delisting and improve reputation</p>
+                                                        <p className="text-xs sm:text-sm text-red-600">Contact the flagged spam databases to request delisting and improve reputation</p>
                                                     </div>
                                                 </div>
                                             )}

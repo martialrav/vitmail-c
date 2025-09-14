@@ -78,14 +78,14 @@ const checkURIBLFree = async (domain) => {
 const checkDNSRecordsFree = async (domain) => {
     try {
         const [spf, dkim, dmarc, mx] = await Promise.all([
-            // SPF record
+            // SPF record - check all TXT records for SPF
             dns.resolveTxt(domain).then(records =>
                 records.filter(record => record[0].startsWith('v=spf1'))
             ).catch(() => []),
 
-            // DKIM record
-            dns.resolveTxt(`default._domainkey.${domain}`).then(records =>
-                records.filter(record => record[0].startsWith('v=DKIM1'))
+            // DKIM record - check for any domainkey records (not just default)
+            dns.resolveTxt(domain).then(records =>
+                records.filter(record => record[0].toLowerCase().includes('domainkey'))
             ).catch(() => []),
 
             // DMARC record
@@ -97,30 +97,59 @@ const checkDNSRecordsFree = async (domain) => {
             dns.resolveMx(domain).catch(() => [])
         ]);
 
+        // Parse DMARC policy
+        const parseDMARCPolicy = (dmarcRecord) => {
+            if (!dmarcRecord) return { policy: 'none', percentage: null, rua: null };
+
+            const policyMatch = dmarcRecord.match(/p=([^;]+)/);
+            const percentageMatch = dmarcRecord.match(/pct=(\d+)/);
+            const ruaMatch = dmarcRecord.match(/rua=([^;]+)/);
+
+            return {
+                policy: policyMatch ? policyMatch[1].toLowerCase() : 'none',
+                percentage: percentageMatch ? parseInt(percentageMatch[1]) : 100,
+                rua: ruaMatch ? ruaMatch[1] : null
+            };
+        };
+
+        const dmarcPolicy = dmarc.length > 0 ? parseDMARCPolicy(dmarc[0][0]) : { policy: 'none', percentage: null, rua: null };
+
         return {
             spf: {
                 exists: spf.length > 0,
-                record: spf[0]?.[0] || null
+                count: spf.length,
+                records: spf.map(r => r[0]),
+                hasMultiple: spf.length > 1,
+                warning: spf.length > 1 ? 'Multiple SPF records detected - this is not recommended and may cause issues' : null
             },
             dkim: {
                 exists: dkim.length > 0,
-                record: dkim[0]?.[0] || null
+                count: dkim.length,
+                records: dkim.map(r => r[0]),
+                warning: dkim.length === 0 ? 'No DKIM records found - consider setting up DKIM authentication' : null
             },
             dmarc: {
                 exists: dmarc.length > 0,
-                record: dmarc[0]?.[0] || null
+                count: dmarc.length,
+                records: dmarc.map(r => r[0]),
+                policy: dmarcPolicy.policy,
+                percentage: dmarcPolicy.percentage,
+                rua: dmarcPolicy.rua,
+                warning: dmarc.length === 0 ? 'No DMARC record found - consider setting up DMARC policy' :
+                    dmarcPolicy.policy === 'none' ? 'DMARC policy is set to "none" - consider using "quarantine" or "reject" for better protection' : null
             },
             mx: {
                 exists: mx.length > 0,
+                count: mx.length,
                 records: mx
             }
         };
     } catch (error) {
         return {
-            spf: { exists: false, record: null },
-            dkim: { exists: false, record: null },
-            dmarc: { exists: false, record: null },
-            mx: { exists: false, records: [] },
+            spf: { exists: false, count: 0, records: [], hasMultiple: false, warning: null },
+            dkim: { exists: false, count: 0, records: [], warning: null },
+            dmarc: { exists: false, count: 0, records: [], policy: 'none', percentage: null, rua: null, warning: null },
+            mx: { exists: false, count: 0, records: [] },
             error: error.message
         };
     }
@@ -137,23 +166,37 @@ const checkEmailReputationFree = async (domain) => {
         ]);
 
         const isListed = spamhaus.isListed || surbl.isListed || uribl.isListed;
-        const reasons = [spamhaus, surbl, uribl]
+        const flaggedHouses = [spamhaus, surbl, uribl]
             .filter(check => check.isListed)
-            .map(check => `${check.spamHouse}: ${check.reason}`);
+            .map(check => ({
+                name: check.spamHouse,
+                reason: check.reason,
+                contact: getSpamHouseContact(check.spamHouse)
+            }));
 
         return {
             isListed,
-            reasons,
+            flaggedHouses,
             details: { spamhaus, surbl, uribl }
         };
     } catch (error) {
         return {
             isListed: false,
-            reasons: [],
+            flaggedHouses: [],
             details: {},
             error: error.message
         };
     }
+};
+
+// Helper function to get contact information for spam houses
+const getSpamHouseContact = (spamHouse) => {
+    const contacts = {
+        'SPAMHAUS': 'https://www.spamhaus.org/contact/',
+        'SURBL': 'https://www.surbl.org/contact',
+        'URIBL': 'https://uribl.com/contact.shtml'
+    };
+    return contacts[spamHouse] || null;
 };
 
 export {
