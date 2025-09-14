@@ -631,7 +631,7 @@ const DomainChecker = () => {
 
                             <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                                 <p className="text-sm text-blue-800">
-                                    <span className="font-semibold">🎉 What you'll get:</span> Early access, exclusive features, and priority support when we launch!
+                                    <span className="font-semibold">🎉 What you&apos;ll get:</span> Early access, exclusive features, and priority support when we launch!
                                 </p>
                             </div>
                         </>
@@ -641,10 +641,10 @@ const DomainChecker = () => {
                                 <CheckCircleIcon className="w-8 h-8 text-green-600" />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">
-                                You're on the waitlist! 🎉
+                                You&apos;re on the waitlist! 🎉
                             </h3>
                             <p className="text-gray-600">
-                                We'll notify you as soon as pro features are available. Thank you for your interest!
+                                We&apos;ll notify you as soon as pro features are available. Thank you for your interest!
                             </p>
                         </div>
                     )}
@@ -663,10 +663,10 @@ const DomainChecker = () => {
                             <span className="text-2xl">🍊</span>
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            You've Used Your Free Checks!
+                            You&apos;ve Used Your Free Checks!
                         </h3>
                         <p className="text-gray-600">
-                            You've checked 3 domains for free. Create a free account to continue monitoring more domains with up to 5 domains in your dashboard.
+                            You&apos;ve checked 3 domains for free. Create a free account to continue monitoring more domains with up to 5 domains in your dashboard.
                         </p>
                     </div>
 

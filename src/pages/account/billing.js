@@ -82,11 +82,11 @@ const Billing = ({ invoices, products }) => {
               Pro Features Coming Soon!
             </h3>
             <p className="text-gray-600">
-              We're working hard on advanced features. Join our waitlist to be the first to know when they're available!
+              We&apos;re working hard on advanced features. Join our waitlist to be the first to know when they&apos;re available!
             </p>
             <div className="p-4 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800">
-                <span className="font-semibold">🎉 What's coming:</span> Unlimited domain monitoring, advanced analytics, team collaboration, and priority support!
+                <span className="font-semibold">🎉 What&apos;s coming:</span> Unlimited domain monitoring, advanced analytics, team collaboration, and priority support!
               </p>
             </div>
             <Button
