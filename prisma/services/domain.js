@@ -161,8 +161,6 @@ export const getDomains = async (slug) =>
     },
   });
 
-export { checkDomainLimit };
-
 export const verifyDomain = async (id, email, slug, name, verified) => {
   const workspace = await prisma.workspace.findFirst({
     select: { id: true },
