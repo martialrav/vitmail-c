@@ -766,40 +766,43 @@ const DomainChecker = () => {
                                     </AnimatedCard>
 
                                     {/* Key Metrics */}
-                                    <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-                                        <MetricCard
-                                            title="Spam Status"
-                                            value={getSpamHouseStatusText(result.spamHouseStatus)}
-                                            icon={getSpamHouseStatusIcon(result.spamHouseStatus)}
-                                            color={result.spamHouseStatus === 'CLEAN' ? 'green' : 'red'}
-                                            delay={500}
-                                        />
+                                    <div className={`lg:col-span-2 grid gap-4 ${result.spamHouseStatus === 'FLAGGED' ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+                                        {/* Only show spam status when flagged */}
+                                        {result.spamHouseStatus === 'FLAGGED' && (
+                                            <MetricCard
+                                                title="⚠️ Spam Alert"
+                                                value="Domain Flagged"
+                                                icon={getSpamHouseStatusIcon(result.spamHouseStatus)}
+                                                color="red"
+                                                delay={500}
+                                            />
+                                        )}
                                         <MetricCard
                                             title="Overall Health"
                                             value={result.isHealthy ? 'Healthy' : 'Needs Care'}
                                             icon={<ShieldCheckIcon className={`w-6 h-6 ${result.isHealthy ? 'text-green-600' : 'text-red-600'}`} />}
                                             color={result.isHealthy ? 'green' : 'red'}
-                                            delay={600}
+                                            delay={result.spamHouseStatus === 'FLAGGED' ? 600 : 500}
                                         />
                                         <MetricCard
                                             title="Email Auth"
                                             value={`${[result.checks.spf?.exists, result.checks.dkim?.exists, result.checks.dmarc?.exists, result.checks.mx?.exists].filter(Boolean).length}/4 Setup`}
                                             icon={<CheckCircleIcon className="w-6 h-6 text-blue-600" />}
                                             color="blue"
-                                            delay={700}
+                                            delay={result.spamHouseStatus === 'FLAGGED' ? 700 : 600}
                                         />
                                         <MetricCard
                                             title="Security Level"
                                             value={result.healthScore >= 80 ? 'High' : result.healthScore >= 60 ? 'Medium' : 'Low'}
                                             icon={<ShieldCheckIcon className="w-6 h-6 text-purple-600" />}
                                             color="purple"
-                                            delay={800}
+                                            delay={result.spamHouseStatus === 'FLAGGED' ? 800 : 700}
                                         />
                                     </div>
                                 </div>
 
                                 {/* Charts Section */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className={`grid gap-6 ${result.checks.blacklistSummary && result.checks.blacklistSummary.flaggedCount > 0 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
                                     {/* Email Authentication Chart */}
                                     <AnimatedCard className="bg-gradient-to-br from-blue-50 to-indigo-50" delay={900}>
                                         <div className="p-6">
@@ -822,12 +825,12 @@ const DomainChecker = () => {
                                         </div>
                                     </AnimatedCard>
 
-                                    {/* Blacklist Analysis Chart */}
-                                    {result.checks.blacklistSummary && (
-                                        <AnimatedCard className="bg-gradient-to-br from-green-50 to-emerald-50" delay={1000}>
+                                    {/* Blacklist Analysis Chart - Only show when there are flagged results */}
+                                    {result.checks.blacklistSummary && result.checks.blacklistSummary.flaggedCount > 0 && (
+                                        <AnimatedCard className="bg-gradient-to-br from-red-50 to-pink-50" delay={1000}>
                                             <div className="p-6">
-                                                <h3 className="text-xl font-bold text-green-800 mb-4 text-center">
-                                                    🛡️ Blacklist Analysis
+                                                <h3 className="text-xl font-bold text-red-800 mb-4 text-center">
+                                                    🚨 Spam Database Alerts
                                                 </h3>
                                                 <ResponsiveContainer width="100%" height={300}>
                                                     <PieChart>
@@ -850,12 +853,17 @@ const DomainChecker = () => {
                                                 <div className="flex justify-center space-x-4 mt-4">
                                                     <div className="flex items-center space-x-2">
                                                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                                        <span className="text-sm text-green-700">Clean</span>
+                                                        <span className="text-sm text-green-700">Clean ({result.checks.blacklistSummary.cleanCount})</span>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
                                                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                                        <span className="text-sm text-red-700">Flagged</span>
+                                                        <span className="text-sm text-red-700">Flagged ({result.checks.blacklistSummary.flaggedCount})</span>
                                                     </div>
+                                                </div>
+                                                <div className="mt-4 p-3 bg-red-100 rounded-lg">
+                                                    <p className="text-sm text-red-800 font-medium text-center">
+                                                        ⚠️ Your domain was found in {result.checks.blacklistSummary.flaggedCount} spam database{result.checks.blacklistSummary.flaggedCount !== 1 ? 's' : ''}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </AnimatedCard>
