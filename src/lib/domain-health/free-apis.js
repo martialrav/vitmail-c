@@ -1,77 +1,186 @@
-// Free spam house checking methods - no API keys required!
+// Enhanced domain spam house checker - no API keys required!
+// Implements comprehensive DNS-based blacklist checking with async queries
 
 const dns = require('dns').promises;
 
-// Free SpamHaus DNS lookups
+// Comprehensive list of domain blacklists (RHSBLs/DNSBLs)
+const BLACKLISTS = {
+    'spamhaus_dbl': {
+        zone: 'dbl.spamhaus.org',
+        name: 'SpamHaus DBL',
+        description: 'Domain Block List - blocks domains used for spam',
+        contact: 'https://www.spamhaus.org/contact/',
+        timeout: 5000
+    },
+    'spamhaus_zen': {
+        zone: 'zen.spamhaus.org',
+        name: 'SpamHaus ZEN',
+        description: 'Comprehensive spam and malware blocklist',
+        contact: 'https://www.spamhaus.org/contact/',
+        timeout: 5000
+    },
+    'surbl': {
+        zone: 'multi.surbl.org',
+        name: 'SURBL',
+        description: 'Multi-level URI blacklist',
+        contact: 'https://www.surbl.org/contact',
+        timeout: 5000
+    },
+    'uribl': {
+        zone: 'multi.uribl.com',
+        name: 'URIBL',
+        description: 'URI blacklist for spam domains',
+        contact: 'https://uribl.com/contact.shtml',
+        timeout: 5000
+    },
+    'sorbs': {
+        zone: 'dnsbl.sorbs.net',
+        name: 'SORBS',
+        description: 'Spam and Open Relay Blocking System',
+        contact: 'https://www.sorbs.net/contact.shtml',
+        timeout: 5000
+    },
+    'barracuda': {
+        zone: 'b.barracudacentral.org',
+        name: 'Barracuda',
+        description: 'Barracuda Central reputation service',
+        contact: 'https://www.barracudacentral.org/contact',
+        timeout: 5000
+    },
+    'spamcop': {
+        zone: 'bl.spamcop.net',
+        name: 'SpamCop',
+        description: 'SpamCop DNS blacklist',
+        contact: 'https://www.spamcop.net/contact.shtml',
+        timeout: 5000
+    },
+    'invaluement': {
+        zone: 'dnsbl.invaluement.com',
+        name: 'Invaluement',
+        description: 'Invaluement DNS blacklist',
+        contact: 'https://www.invaluement.com/contact',
+        timeout: 5000
+    },
+    'spamrats': {
+        zone: 'noptr.spamrats.com',
+        name: 'SpamRats',
+        description: 'SpamRats DNS blacklist',
+        contact: 'https://www.spamrats.com/contact',
+        timeout: 5000
+    },
+    'abuseat': {
+        zone: 'cbl.abuseat.org',
+        name: 'AbuseAt CBL',
+        description: 'Composite Blocking List',
+        contact: 'https://www.abuseat.org/contact',
+        timeout: 5000
+    }
+};
+
+// Cache for DNS queries to avoid repeated lookups
+const dnsCache = new Map();
+const CACHE_TTL = 300000; // 5 minutes
+
+// Enhanced DNS query with timeout and caching
+const queryBlacklist = async (domain, blacklistKey) => {
+    const blacklist = BLACKLISTS[blacklistKey];
+    if (!blacklist) return null;
+
+    const query = `${domain}.${blacklist.zone}`;
+    const cacheKey = `${query}_${Date.now()}`;
+
+    // Check cache first
+    const cached = dnsCache.get(query);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+        return cached.result;
+    }
+
+    try {
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('DNS query timeout')), blacklist.timeout);
+        });
+
+        // Race between DNS query and timeout
+        const result = await Promise.race([
+            dns.resolve4(query).then(records => ({
+                isListed: true,
+                records: records,
+                timestamp: Date.now()
+            })),
+            timeoutPromise
+        ]);
+
+        // Cache the result
+        dnsCache.set(query, result);
+        return result;
+
+    } catch (error) {
+        // Cache negative results too (but with shorter TTL)
+        const negativeResult = {
+            isListed: false,
+            error: error.message,
+            timestamp: Date.now()
+        };
+        dnsCache.set(query, negativeResult);
+        return negativeResult;
+    }
+};
+
+// Check individual blacklist
+const checkBlacklist = async (domain, blacklistKey) => {
+    const blacklist = BLACKLISTS[blacklistKey];
+    const result = await queryBlacklist(domain, blacklistKey);
+
+    return {
+        key: blacklistKey,
+        name: blacklist.name,
+        description: blacklist.description,
+        contact: blacklist.contact,
+        isListed: result?.isListed || false,
+        records: result?.records || null,
+        error: result?.error || null,
+        responseTime: result?.timestamp ? Date.now() - result.timestamp : null
+    };
+};
+
+// Legacy functions for backward compatibility
 const checkSpamHausFree = async (domain) => {
-    try {
-        // Check if domain is in SpamHaus DBL (Domain Block List)
-        const dblResult = await dns.resolve4(`${domain}.dbl.spamhaus.org`).catch(() => null);
+    const dblResult = await checkBlacklist(domain, 'spamhaus_dbl');
+    const zenResult = await checkBlacklist(domain, 'spamhaus_zen');
 
-        // Check if domain is in SpamHaus ZEN (comprehensive list)
-        const zenResult = await dns.resolve4(`${domain}.zen.spamhaus.org`).catch(() => null);
-
-        return {
-            spamHouse: 'SPAMHAUS',
-            isListed: !!(dblResult || zenResult),
-            reason: dblResult ? 'Listed in DBL' : zenResult ? 'Listed in ZEN' : null,
-            method: 'DNS'
-        };
-    } catch (error) {
-        return {
-            spamHouse: 'SPAMHAUS',
-            isListed: false,
-            reason: null,
-            method: 'DNS',
-            error: error.message
-        };
-    }
+    return {
+        spamHouse: 'SPAMHAUS',
+        isListed: dblResult.isListed || zenResult.isListed,
+        reason: dblResult.isListed ? 'Listed in DBL' : zenResult.isListed ? 'Listed in ZEN' : null,
+        method: 'DNS',
+        details: {
+            dbl: dblResult,
+            zen: zenResult
+        }
+    };
 };
 
-// Free SURBL checking
 const checkSURBLFree = async (domain) => {
-    try {
-        // Check SURBL multi-level URI blacklist
-        const surblResult = await dns.resolve4(`${domain}.multi.surbl.org`).catch(() => null);
-
-        return {
-            spamHouse: 'SURBL',
-            isListed: !!surblResult,
-            reason: surblResult ? 'Listed in SURBL' : null,
-            method: 'DNS'
-        };
-    } catch (error) {
-        return {
-            spamHouse: 'SURBL',
-            isListed: false,
-            reason: null,
-            method: 'DNS',
-            error: error.message
-        };
-    }
+    const result = await checkBlacklist(domain, 'surbl');
+    return {
+        spamHouse: 'SURBL',
+        isListed: result.isListed,
+        reason: result.isListed ? 'Listed in SURBL' : null,
+        method: 'DNS',
+        details: result
+    };
 };
 
-// Free URIBL checking
 const checkURIBLFree = async (domain) => {
-    try {
-        // Check URIBL blacklist
-        const uriblResult = await dns.resolve4(`${domain}.multi.uribl.com`).catch(() => null);
-
-        return {
-            spamHouse: 'URIBL',
-            isListed: !!uriblResult,
-            reason: uriblResult ? 'Listed in URIBL' : null,
-            method: 'DNS'
-        };
-    } catch (error) {
-        return {
-            spamHouse: 'URIBL',
-            isListed: false,
-            reason: null,
-            method: 'DNS',
-            error: error.message
-        };
-    }
+    const result = await checkBlacklist(domain, 'uribl');
+    return {
+        spamHouse: 'URIBL',
+        isListed: result.isListed,
+        reason: result.isListed ? 'Listed in URIBL' : null,
+        method: 'DNS',
+        details: result
+    };
 };
 
 // Free DNS record checking
@@ -273,41 +382,114 @@ const checkDNSRecordsFree = async (domain) => {
     }
 };
 
-// Free email reputation checking
+// Enhanced email reputation checking with comprehensive blacklist analysis
 const checkEmailReputationFree = async (domain) => {
     try {
-        // Check multiple free blacklists
-        const [spamhaus, surbl, uribl] = await Promise.all([
-            checkSpamHausFree(domain),
-            checkSURBLFree(domain),
-            checkURIBLFree(domain)
-        ]);
+        const startTime = Date.now();
 
-        const isListed = spamhaus.isListed || surbl.isListed || uribl.isListed;
-        const flaggedHouses = [spamhaus, surbl, uribl]
-            .filter(check => check.isListed)
-            .map(check => ({
-                name: check.spamHouse,
-                reason: check.reason,
-                contact: getSpamHouseContact(check.spamHouse)
-            }));
+        // Get all blacklist keys for parallel checking
+        const blacklistKeys = Object.keys(BLACKLISTS);
+
+        // Check all blacklists in parallel for maximum speed
+        const blacklistResults = await Promise.all(
+            blacklistKeys.map(key => checkBlacklist(domain, key))
+        );
+
+        // Separate flagged and clean results
+        const flaggedBlacklists = blacklistResults.filter(result => result.isListed);
+        const cleanBlacklists = blacklistResults.filter(result => !result.isListed);
+
+        // Calculate statistics
+        const totalChecked = blacklistResults.length;
+        const flaggedCount = flaggedBlacklists.length;
+        const cleanCount = cleanBlacklists.length;
+        const errorCount = blacklistResults.filter(result => result.error).length;
+
+        // Calculate average response time
+        const responseTimes = blacklistResults
+            .filter(result => result.responseTime !== null)
+            .map(result => result.responseTime);
+        const avgResponseTime = responseTimes.length > 0
+            ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
+            : 0;
+
+        // Legacy format for backward compatibility
+        const legacyResults = {
+            spamhaus: {
+                isListed: flaggedBlacklists.some(r => r.key.includes('spamhaus')),
+                reason: flaggedBlacklists.find(r => r.key.includes('spamhaus'))?.description || null
+            },
+            surbl: {
+                isListed: flaggedBlacklists.some(r => r.key === 'surbl'),
+                reason: flaggedBlacklists.find(r => r.key === 'surbl')?.description || null
+            },
+            uribl: {
+                isListed: flaggedBlacklists.some(r => r.key === 'uribl'),
+                reason: flaggedBlacklists.find(r => r.key === 'uribl')?.description || null
+            }
+        };
 
         return {
-            isListed,
-            flaggedHouses,
-            details: { spamhaus, surbl, uribl }
+            isListed: flaggedCount > 0,
+            flaggedCount,
+            cleanCount,
+            totalChecked,
+            errorCount,
+            avgResponseTime: Math.round(avgResponseTime),
+            flaggedBlacklists: flaggedBlacklists.map(result => ({
+                name: result.name,
+                key: result.key,
+                description: result.description,
+                contact: result.contact,
+                records: result.records,
+                responseTime: result.responseTime
+            })),
+            cleanBlacklists: cleanBlacklists.map(result => ({
+                name: result.name,
+                key: result.key,
+                responseTime: result.responseTime
+            })),
+            errors: blacklistResults
+                .filter(result => result.error)
+                .map(result => ({
+                    name: result.name,
+                    key: result.key,
+                    error: result.error
+                })),
+            details: legacyResults,
+            summary: {
+                domain,
+                checkedAt: new Date().toISOString(),
+                totalTime: Date.now() - startTime,
+                status: flaggedCount > 0 ? 'FLAGGED' : 'CLEAN',
+                confidence: flaggedCount > 0 ? Math.min(flaggedCount / totalChecked, 1) : 1
+            }
         };
     } catch (error) {
         return {
             isListed: false,
-            flaggedHouses: [],
+            flaggedCount: 0,
+            cleanCount: 0,
+            totalChecked: 0,
+            errorCount: 1,
+            avgResponseTime: 0,
+            flaggedBlacklists: [],
+            cleanBlacklists: [],
+            errors: [{ name: 'System', key: 'system', error: error.message }],
             details: {},
+            summary: {
+                domain,
+                checkedAt: new Date().toISOString(),
+                totalTime: 0,
+                status: 'ERROR',
+                confidence: 0
+            },
             error: error.message
         };
     }
 };
 
-// Helper function to get contact information for spam houses
+// Helper function to get contact information for spam houses (legacy)
 const getSpamHouseContact = (spamHouse) => {
     const contacts = {
         'SPAMHAUS': 'https://www.spamhaus.org/contact/',

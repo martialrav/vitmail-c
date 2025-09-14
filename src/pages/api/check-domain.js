@@ -55,12 +55,30 @@ export default async function handler(req, res) {
                 mxRecords: dnsRecords.mx.exists,
                 isHealthy: healthScore >= 70,
                 checks: {
+                    // Legacy format for backward compatibility
                     spamHouse: [
                         { spamHouse: 'SPAMHAUS', isListed: spamReputation.details.spamhaus.isListed, reason: spamReputation.details.spamhaus.reason },
                         { spamHouse: 'SURBL', isListed: spamReputation.details.surbl.isListed, reason: spamReputation.details.surbl.reason },
                         { spamHouse: 'URIBL', isListed: spamReputation.details.uribl.isListed, reason: spamReputation.details.uribl.reason }
                     ],
-                    flaggedHouses: spamReputation.flaggedHouses,
+                    // Enhanced blacklist data
+                    blacklistSummary: {
+                        flaggedCount: spamReputation.flaggedCount,
+                        cleanCount: spamReputation.cleanCount,
+                        totalChecked: spamReputation.totalChecked,
+                        errorCount: spamReputation.errorCount,
+                        avgResponseTime: spamReputation.avgResponseTime,
+                        confidence: spamReputation.summary.confidence
+                    },
+                    flaggedBlacklists: spamReputation.flaggedBlacklists,
+                    cleanBlacklists: spamReputation.cleanBlacklists,
+                    errors: spamReputation.errors,
+                    // Legacy format
+                    flaggedHouses: spamReputation.flaggedBlacklists.map(bl => ({
+                        name: bl.name,
+                        reason: bl.description,
+                        contact: bl.contact
+                    })),
                     spf: dnsRecords.spf,
                     dkim: dnsRecords.dkim,
                     dmarc: dnsRecords.dmarc,

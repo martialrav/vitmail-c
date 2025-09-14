@@ -538,8 +538,104 @@ const DomainChecker = () => {
                                         </div>
                                     )}
 
-                                    {/* Spam House Details */}
-                                    {result.checks.flaggedHouses && result.checks.flaggedHouses.length > 0 && (
+                                    {/* Enhanced Blacklist Analysis */}
+                                    {result.checks.blacklistSummary && (
+                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
+                                            <div className="text-center mb-4 sm:mb-6">
+                                                <h4 className="text-xl sm:text-2xl font-bold text-blue-800 mb-2">
+                                                    🛡️ Blacklist Analysis
+                                                </h4>
+                                                <p className="text-sm sm:text-base text-blue-700 px-2">
+                                                    Comprehensive spam database check results
+                                                </p>
+                                            </div>
+
+                                            {/* Summary Stats */}
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                                                <div className="text-center p-3 bg-white rounded-xl border border-blue-200">
+                                                    <div className="text-lg sm:text-xl font-bold text-blue-800">{result.checks.blacklistSummary.totalChecked}</div>
+                                                    <div className="text-xs text-blue-600">Total Checked</div>
+                                                </div>
+                                                <div className="text-center p-3 bg-white rounded-xl border border-red-200">
+                                                    <div className="text-lg sm:text-xl font-bold text-red-800">{result.checks.blacklistSummary.flaggedCount}</div>
+                                                    <div className="text-xs text-red-600">Flagged</div>
+                                                </div>
+                                                <div className="text-center p-3 bg-white rounded-xl border border-green-200">
+                                                    <div className="text-lg sm:text-xl font-bold text-green-800">{result.checks.blacklistSummary.cleanCount}</div>
+                                                    <div className="text-xs text-green-600">Clean</div>
+                                                </div>
+                                                <div className="text-center p-3 bg-white rounded-xl border border-gray-200">
+                                                    <div className="text-lg sm:text-xl font-bold text-gray-800">{result.checks.blacklistSummary.avgResponseTime}ms</div>
+                                                    <div className="text-xs text-gray-600">Avg Response</div>
+                                                </div>
+                                            </div>
+
+                                            {/* Flagged Blacklists */}
+                                            {result.checks.flaggedBlacklists && result.checks.flaggedBlacklists.length > 0 && (
+                                                <div className="mb-4 sm:mb-6">
+                                                    <h5 className="text-lg font-semibold text-red-800 mb-3">🚨 Flagged Blacklists</h5>
+                                                    <div className="space-y-2 sm:space-y-3">
+                                                        {result.checks.flaggedBlacklists.map((blacklist, index) => (
+                                                            <div key={index} className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-red-200">
+                                                                <span className="text-xl sm:text-2xl flex-shrink-0">🚨</span>
+                                                                <div className="min-w-0 flex-1">
+                                                                    <div className="flex items-center justify-between mb-1">
+                                                                        <p className="text-sm sm:text-base font-semibold text-red-800">{blacklist.name}</p>
+                                                                        <span className="text-xs text-gray-500">{blacklist.responseTime}ms</span>
+                                                                    </div>
+                                                                    <p className="text-xs sm:text-sm text-red-600 mb-2">{blacklist.description}</p>
+                                                                    {blacklist.contact && (
+                                                                        <a
+                                                                            href={blacklist.contact}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            className="inline-flex items-center text-xs sm:text-sm text-blue-600 hover:text-blue-800 underline"
+                                                                        >
+                                                                            Contact {blacklist.name} to request delisting →
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Clean Blacklists */}
+                                            {result.checks.cleanBlacklists && result.checks.cleanBlacklists.length > 0 && (
+                                                <div className="mb-4 sm:mb-6">
+                                                    <h5 className="text-lg font-semibold text-green-800 mb-3">✅ Clean Blacklists</h5>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                                        {result.checks.cleanBlacklists.map((blacklist, index) => (
+                                                            <div key={index} className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border border-green-200">
+                                                                <span className="text-sm text-green-800">{blacklist.name}</span>
+                                                                <span className="text-xs text-gray-500">{blacklist.responseTime}ms</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Errors */}
+                                            {result.checks.errors && result.checks.errors.length > 0 && (
+                                                <div>
+                                                    <h5 className="text-lg font-semibold text-yellow-800 mb-3">⚠️ Query Errors</h5>
+                                                    <div className="space-y-2">
+                                                        {result.checks.errors.map((error, index) => (
+                                                            <div key={index} className="p-2 sm:p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                                                <p className="text-sm text-yellow-800">
+                                                                    <span className="font-semibold">{error.name}:</span> {error.error}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Legacy Spam House Details (fallback) */}
+                                    {result.checks.flaggedHouses && result.checks.flaggedHouses.length > 0 && !result.checks.blacklistSummary && (
                                         <div className="bg-red-50 rounded-2xl p-4 sm:p-6 border border-red-200">
                                             <div className="text-center mb-4 sm:mb-6">
                                                 <h4 className="text-xl sm:text-2xl font-bold text-red-800 mb-2">
