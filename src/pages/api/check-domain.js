@@ -123,7 +123,11 @@ export default async function handler(req, res) {
                     mx: {
                         exists: hasMx,
                         count: hasMx ? Math.floor(Math.random() * 3) + 1 : 0,
-                        records: hasMx ? [{ priority: 10, exchange: `mail.${domain}` }] : []
+                        records: hasMx ? [{ priority: 10, exchange: `mail.${domain}` }] : [],
+                        provider: hasMx ? (Math.random() > 0.5 ? 'google' : Math.random() > 0.5 ? 'microsoft' : 'custom') : 'Unknown',
+                        providerName: hasMx ? (Math.random() > 0.5 ? 'Google Workspace (Gmail)' : Math.random() > 0.5 ? 'Microsoft 365 (Outlook)' : 'Custom/Private Server') : 'Unknown Provider',
+                        confidence: hasMx ? 0.9 : 0,
+                        details: hasMx ? [{ priority: 10, exchange: `mail.${domain}`, provider: 'Custom/Private Server', confidence: 0.7 }] : []
                     }
                 },
                 realData: false

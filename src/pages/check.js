@@ -484,9 +484,59 @@ const DomainChecker = () => {
                                                 <p className="text-xs text-gray-600">
                                                     {result.checks.mx.exists ? '✅ Email server configured' : '❌ No email server setup'}
                                                 </p>
+                                                {result.checks.mx.exists && result.checks.mx.providerName && (
+                                                    <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                                                        <p className="text-xs text-blue-800">
+                                                            <span className="font-semibold">Provider:</span> {result.checks.mx.providerName}
+                                                            {result.checks.mx.confidence > 0.8 && (
+                                                                <span className="ml-1 text-green-600">✓</span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* MX Records Details */}
+                                    {result.checks.mx.exists && result.checks.mx.details && result.checks.mx.details.length > 0 && (
+                                        <div className="bg-blue-50 rounded-2xl p-4 sm:p-6 border border-blue-200">
+                                            <div className="text-center mb-4 sm:mb-6">
+                                                <h4 className="text-xl sm:text-2xl font-bold text-blue-800 mb-2">
+                                                    📧 Email Server Details
+                                                </h4>
+                                                <p className="text-sm sm:text-base text-blue-700 px-2">
+                                                    Your domain&apos;s email server configuration
+                                                </p>
+                                            </div>
+
+                                            <div className="space-y-3 sm:space-y-4">
+                                                {result.checks.mx.details.map((record, index) => (
+                                                    <div key={index} className="flex items-start space-x-3 p-3 sm:p-4 bg-white rounded-xl border border-blue-200">
+                                                        <span className="text-xl sm:text-2xl flex-shrink-0">📨</span>
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <p className="text-sm sm:text-base font-semibold text-blue-800">
+                                                                    Priority {record.priority}
+                                                                </p>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                                                                        {record.provider}
+                                                                    </span>
+                                                                    {record.confidence > 0.8 && (
+                                                                        <span className="text-green-600 text-sm">✓</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-xs sm:text-sm text-blue-600 font-mono break-all">
+                                                                {record.exchange}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Spam House Details */}
                                     {result.checks.flaggedHouses && result.checks.flaggedHouses.length > 0 && (
@@ -591,7 +641,7 @@ const DomainChecker = () => {
                                                     <span className="text-xl sm:text-2xl flex-shrink-0">⚠️</span>
                                                     <div className="min-w-0">
                                                         <p className="text-sm sm:text-base font-semibold text-yellow-800">Strengthen DMARC Policy</p>
-                                                        <p className="text-xs sm:text-sm text-yellow-600">Your DMARC policy is set to "none". Consider using "quarantine" or "reject" for better protection</p>
+                                                        <p className="text-xs sm:text-sm text-yellow-600">Your DMARC policy is set to &quot;none&quot;. Consider using &quot;quarantine&quot; or &quot;reject&quot; for better protection</p>
                                                     </div>
                                                 </div>
                                             )}

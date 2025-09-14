@@ -114,6 +114,120 @@ const checkDNSRecordsFree = async (domain) => {
 
         const dmarcPolicy = dmarc.length > 0 ? parseDMARCPolicy(dmarc[0][0]) : { policy: 'none', percentage: null, rua: null };
 
+        // Analyze MX records to identify email service provider
+        const analyzeMXRecords = (mxRecords) => {
+            if (!mxRecords || mxRecords.length === 0) {
+                return { provider: 'Unknown', confidence: 0, details: [] };
+            }
+
+            const providers = {
+                'google': {
+                    patterns: [/aspmx\.l\.google\.com/i, /alt\d+\.aspmx\.l\.google\.com/i, /aspmx2\.googlemail\.com/i, /aspmx3\.googlemail\.com/i, /aspmx4\.googlemail\.com/i, /aspmx5\.googlemail\.com/i],
+                    name: 'Google Workspace (Gmail)',
+                    confidence: 0.9
+                },
+                'microsoft': {
+                    patterns: [/\.mail\.protection\.outlook\.com/i, /\.mail\.outlook\.com/i, /\.mail\.live\.com/i, /\.hotmail\.com/i],
+                    name: 'Microsoft 365 (Outlook)',
+                    confidence: 0.9
+                },
+                'brevo': {
+                    patterns: [/mail\.brevo\.com/i, /\.brevo\.com/i],
+                    name: 'Brevo (formerly Sendinblue)',
+                    confidence: 0.9
+                },
+                'mailgun': {
+                    patterns: [/mailgun\.org/i, /\.mailgun\.org/i],
+                    name: 'Mailgun',
+                    confidence: 0.9
+                },
+                'zoho': {
+                    patterns: [/\.zoho\.com/i, /\.zohomail\.com/i],
+                    name: 'Zoho Mail',
+                    confidence: 0.9
+                },
+                'sendgrid': {
+                    patterns: [/\.sendgrid\.net/i, /\.sendgrid\.com/i],
+                    name: 'SendGrid',
+                    confidence: 0.9
+                },
+                'amazon': {
+                    patterns: [/\.amazonses\.com/i, /\.amazonaws\.com/i],
+                    name: 'Amazon SES',
+                    confidence: 0.9
+                },
+                'mailchimp': {
+                    patterns: [/\.mailchimp\.com/i, /\.mandrillapp\.com/i],
+                    name: 'Mailchimp',
+                    confidence: 0.9
+                },
+                'postmark': {
+                    patterns: [/\.postmarkapp\.com/i],
+                    name: 'Postmark',
+                    confidence: 0.9
+                },
+                'sparkpost': {
+                    patterns: [/\.sparkpostmail\.com/i, /\.sparkpost\.com/i],
+                    name: 'SparkPost',
+                    confidence: 0.9
+                },
+                'custom': {
+                    patterns: [/mail\./i, /smtp\./i, /mx\./i],
+                    name: 'Custom/Private Server',
+                    confidence: 0.7
+                }
+            };
+
+            let bestMatch = { provider: 'Unknown', confidence: 0, name: 'Unknown Provider' };
+            const details = [];
+
+            mxRecords.forEach((record, index) => {
+                const exchange = record.exchange.toLowerCase();
+                let matched = false;
+
+                for (const [key, provider] of Object.entries(providers)) {
+                    for (const pattern of provider.patterns) {
+                        if (pattern.test(exchange)) {
+                            if (provider.confidence > bestMatch.confidence) {
+                                bestMatch = {
+                                    provider: key,
+                                    confidence: provider.confidence,
+                                    name: provider.name
+                                };
+                            }
+                            details.push({
+                                priority: record.priority,
+                                exchange: record.exchange,
+                                provider: provider.name,
+                                confidence: provider.confidence
+                            });
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (matched) break;
+                }
+
+                if (!matched) {
+                    details.push({
+                        priority: record.priority,
+                        exchange: record.exchange,
+                        provider: 'Unknown',
+                        confidence: 0
+                    });
+                }
+            });
+
+            return {
+                provider: bestMatch.provider,
+                name: bestMatch.name,
+                confidence: bestMatch.confidence,
+                details: details
+            };
+        };
+
+        const mxAnalysis = analyzeMXRecords(mx);
+
         return {
             spf: {
                 exists: spf.length > 0,
@@ -141,7 +255,11 @@ const checkDNSRecordsFree = async (domain) => {
             mx: {
                 exists: mx.length > 0,
                 count: mx.length,
-                records: mx
+                records: mx,
+                provider: mxAnalysis.provider,
+                providerName: mxAnalysis.name,
+                confidence: mxAnalysis.confidence,
+                details: mxAnalysis.details
             }
         };
     } catch (error) {
@@ -149,7 +267,7 @@ const checkDNSRecordsFree = async (domain) => {
             spf: { exists: false, count: 0, records: [], hasMultiple: false, warning: null },
             dkim: { exists: false, count: 0, records: [], warning: null },
             dmarc: { exists: false, count: 0, records: [], policy: 'none', percentage: null, rua: null, warning: null },
-            mx: { exists: false, count: 0, records: [] },
+            mx: { exists: false, count: 0, records: [], provider: 'Unknown', providerName: 'Unknown Provider', confidence: 0, details: [] },
             error: error.message
         };
     }
