@@ -17,42 +17,42 @@ const ComingSoon = () => {
             title: "Advanced Analytics",
             description: "Detailed health trends, performance metrics, and predictive insights for your domains.",
             status: "In Development",
-            eta: "Q2 2024"
+            eta: "Q2 shortly"
         },
         {
             icon: <BellIcon className="w-8 h-8" />,
             title: "Smart Alerts",
             description: "Real-time notifications when domains are flagged or health scores drop below thresholds.",
             status: "Coming Soon",
-            eta: "Q1 2024"
+            eta: "Q1 shortly"
         },
         {
             icon: <DocumentTextIcon className="w-8 h-8" />,
             title: "Automated Reports",
             description: "Weekly and monthly health reports delivered directly to your inbox with actionable insights.",
             status: "Planned",
-            eta: "Q2 2024"
+            eta: "Q2 shortly"
         },
         {
             icon: <CogIcon className="w-8 h-8" />,
             title: "API Integration",
             description: "Connect Vitmail-C with your existing tools and workflows via our comprehensive API.",
             status: "Planned",
-            eta: "Q3 2024"
+            eta: "Q3 shortly"
         },
         {
             icon: <UserGroupIcon className="w-8 h-8" />,
             title: "Team Collaboration",
             description: "Share domain health insights with your team and assign tasks for fixing issues.",
             status: "Planned",
-            eta: "Q2 2024"
+            eta: "Q2 shortly"
         },
         {
             icon: <RocketLaunchIcon className="w-8 h-8" />,
             title: "AI Recommendations",
             description: "Get personalized recommendations powered by AI to improve your domain's health score.",
             status: "Future",
-            eta: "Q4 2024"
+            eta: "Q4 shortly"
         }
     ];
 
@@ -80,10 +80,10 @@ const ComingSoon = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
                     🚀 Coming Soon to Vitmail-C
                 </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          We&apos;re working hard to bring you even more powerful domain health monitoring features. 
-          Here&apos;s what&apos;s brewing in our development kitchen!
-        </p>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                    We&apos;re working hard to bring you even more powerful domain health monitoring features.
+                    Here&apos;s what&apos;s brewing in our development kitchen!
+                </p>
             </div>
 
             {/* Feature Grid */}
@@ -92,8 +92,8 @@ const ComingSoon = () => {
                     <div
                         key={index}
                         className={`p-6 bg-white rounded-xl border-2 transition-all duration-200 cursor-pointer ${selectedFeature === index
-                                ? 'border-vitamin-300 shadow-lg transform scale-105'
-                                : 'border-gray-200 hover:border-vitamin-200 hover:shadow-md'
+                            ? 'border-vitamin-300 shadow-lg transform scale-105'
+                            : 'border-gray-200 hover:border-vitamin-200 hover:shadow-md'
                             }`}
                         onClick={() => setSelectedFeature(index)}
                     >
