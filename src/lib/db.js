@@ -10,11 +10,11 @@ const createPrismaClient = () => {
         url: process.env.DATABASE_URL,
       },
     },
-    // Add connection pooling configuration for serverless
+    // Optimize for serverless environments
     __internal: {
       engine: {
-        connectTimeout: 60000,
-        queryTimeout: 60000,
+        connectTimeout: 10000,
+        queryTimeout: 30000,
       },
     },
   });

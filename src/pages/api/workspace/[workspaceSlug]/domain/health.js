@@ -1,7 +1,5 @@
 import { validateSession } from '@/config/api-validation';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/db';
 
 // Mock functions for domain health checking
 // In a real implementation, these would call actual APIs
