@@ -1,0 +1,5 @@
+prisma/services/domain.js
+src/config/subscription-rules/index.js
+src/pages/account/billing.js
+src/pages/api/workspace/[workspaceSlug]/domain.js
+src/pages/check.js

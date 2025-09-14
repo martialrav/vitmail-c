@@ -61,43 +61,43 @@ const Billing = ({ invoices, products }) => {
           <Card.Footer>
             <small>You will be redirected to the payment page</small>
             <Button
-              className="text-white bg-blue-600 hover:bg-blue-500"
+              className="text-white bg-gradient-to-r from-vitamin-600 to-vitamin-700 hover:from-vitamin-700 hover:to-vitamin-800"
               disabled={isSubmitting}
               onClick={toggleModal}
             >
-              Upgrade
+              Join Pro Waitlist
             </Button>
           </Card.Footer>
         </Card>
         <Modal
           show={showModal}
-          title="Upgrade Subscription"
+          title="Join Pro Waitlist"
           toggle={toggleModal}
         >
-          <div className="space-y-0 text-sm text-gray-600">
-            <p>You are currently under the FREE plan</p>
-          </div>
-          <div className="flex space-x-5">
-            {products.map((product, index) => (
-              <Card key={index}>
-                <Card.Body title={product.name} subtitle={product.description}>
-                  <h3 className="text-4xl font-bold">
-                    ${Number(product.prices.unit_amount / 100).toFixed(2)}
-                  </h3>
-                </Card.Body>
-                <Card.Footer>
-                  <Button
-                    className="w-full text-white bg-blue-600 hover:bg-blue-500"
-                    disabled={isSubmitting}
-                    onClick={() => subscribe(product.prices.id)}
-                  >
-                    {isSubmitting
-                      ? 'Redirecting...'
-                      : `Upgrade to ${product.name}`}
-                  </Button>
-                </Card.Footer>
-              </Card>
-            ))}
+          <div className="space-y-4 text-center">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-r from-vitamin-600 to-vitamin-700 rounded-full flex items-center justify-center">
+              <span className="text-2xl">🍊</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">
+              Pro Features Coming Soon!
+            </h3>
+            <p className="text-gray-600">
+              We're working hard on advanced features. Join our waitlist to be the first to know when they're available!
+            </p>
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <span className="font-semibold">🎉 What's coming:</span> Unlimited domain monitoring, advanced analytics, team collaboration, and priority support!
+              </p>
+            </div>
+            <Button
+              className="w-full text-white bg-gradient-to-r from-vitamin-600 to-vitamin-700 hover:from-vitamin-700 hover:to-vitamin-800"
+              onClick={() => {
+                // Redirect to main page waitlist or show form
+                window.location.href = '/check';
+              }}
+            >
+              Join Waitlist
+            </Button>
           </div>
         </Modal>
       </Content.Container>

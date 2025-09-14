@@ -4,19 +4,32 @@ import {
   createDomain,
   deleteDomain,
   verifyDomain,
+  checkDomainLimit,
 } from '@/prisma/services/domain';
 
 const handler = async (req, res) => {
   const { method } = req;
 
-  if (method === 'POST') {
+  if (method === 'GET') {
+    // Check domain limits
+    const session = await validateSession(req, res);
+    try {
+      const limits = await checkDomainLimit(
+        session.user.userId,
+        session.user.email,
+        req.query.workspaceSlug
+      );
+      res.status(200).json({ data: limits });
+    } catch (error) {
+      res.status(400).json({ errors: { error: { msg: error.message } } });
+    }
+  } else if (method === 'POST') {
     const session = await validateSession(req, res);
     await validateAddDomain(req, res);
     const { domainName } = req.body;
     const teamId = process.env.VERCEL_TEAM_ID;
     const response = await api(
-      `${process.env.VERCEL_API_URL}/v9/projects/${
-        process.env.VERCEL_PROJECT_ID
+      `${process.env.VERCEL_API_URL}/v9/projects/${process.env.VERCEL_PROJECT_ID
       }/domains${teamId ? `?teamId=${teamId}` : ''}`,
       {
         body: { name: domainName },
@@ -29,16 +42,20 @@ const handler = async (req, res) => {
 
     if (!response.error) {
       const { apexName, verified, verification } = response;
-      await createDomain(
-        session.user.userId,
-        session.user.email,
-        req.query.workspaceSlug,
-        domainName,
-        apexName,
-        verified,
-        verification
-      );
-      res.status(200).json({ data: { domain: domainName } });
+      try {
+        await createDomain(
+          session.user.userId,
+          session.user.email,
+          req.query.workspaceSlug,
+          domainName,
+          apexName,
+          verified,
+          verification
+        );
+        res.status(200).json({ data: { domain: domainName } });
+      } catch (error) {
+        res.status(400).json({ errors: { error: { msg: error.message } } });
+      }
     } else {
       res
         .status(response.status)
@@ -49,8 +66,7 @@ const handler = async (req, res) => {
     const { domainName } = req.body;
     const teamId = process.env.VERCEL_TEAM_ID;
     const response = await api(
-      `${process.env.VERCEL_API_URL}/v9/projects/${
-        process.env.VERCEL_PROJECT_ID
+      `${process.env.VERCEL_API_URL}/v9/projects/${process.env.VERCEL_PROJECT_ID
       }/domains/${domainName}/verify${teamId ? `?teamId=${teamId}` : ''}`,
       {
         headers: {
@@ -79,8 +95,7 @@ const handler = async (req, res) => {
     const { domainName } = req.body;
     const teamId = process.env.VERCEL_TEAM_ID;
     await api(
-      `${process.env.VERCEL_API_URL}/v8/projects/${
-        process.env.VERCEL_PROJECT_ID
+      `${process.env.VERCEL_API_URL}/v8/projects/${process.env.VERCEL_PROJECT_ID
       }/domains/${domainName}${teamId ? `?teamId=${teamId}` : ''}`,
       {
         headers: {

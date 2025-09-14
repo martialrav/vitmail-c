@@ -2,7 +2,7 @@ import { SubscriptionType } from '@prisma/client';
 
 const rules = {
   [SubscriptionType.FREE]: {
-    customDomains: 1,
+    customDomains: 5,
     members: 1,
     workspaces: 1,
   },
