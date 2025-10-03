@@ -10,11 +10,11 @@ const MXTOOLBOX_BASE_URL = 'https://mxtoolbox.com/api/v1';
 const checkDomainWithMXToolbox = async (domain) => {
     try {
         const startTime = Date.now();
-        
+
         // Perform comprehensive DNS checks
         const [
             spfRecords,
-            dkimRecords, 
+            dkimRecords,
             dmarcRecords,
             mxRecords,
             txtRecords,
@@ -25,10 +25,10 @@ const checkDomainWithMXToolbox = async (domain) => {
             soaRecord
         ] = await Promise.allSettled([
             // SPF records
-            dns.resolveTxt(domain).then(records => 
+            dns.resolveTxt(domain).then(records =>
                 records.filter(record => record[0].startsWith('v=spf1'))
             ),
-            
+
             // DKIM records - check common selectors
             Promise.all([
                 dns.resolveTxt('default._domainkey.' + domain).catch(() => []),
@@ -37,30 +37,30 @@ const checkDomainWithMXToolbox = async (domain) => {
                 dns.resolveTxt('selector1._domainkey.' + domain).catch(() => []),
                 dns.resolveTxt('selector2._domainkey.' + domain).catch(() => [])
             ]).then(results => results.flat()),
-            
+
             // DMARC records
             dns.resolveTxt('_dmarc.' + domain).then(records =>
                 records.filter(record => record[0].startsWith('v=DMARC1'))
             ),
-            
+
             // MX records
             dns.resolveMx(domain),
-            
+
             // All TXT records
             dns.resolveTxt(domain),
-            
+
             // A records
             dns.resolve4(domain),
-            
+
             // AAAA records
             dns.resolve6(domain),
-            
+
             // CNAME records
             dns.resolveCname(domain).catch(() => []),
-            
+
             // NS records
             dns.resolveNs(domain),
-            
+
             // SOA record
             dns.resolveSoa(domain).catch(() => null)
         ]);
@@ -70,7 +70,7 @@ const checkDomainWithMXToolbox = async (domain) => {
             domain,
             checkedAt: new Date().toISOString(),
             responseTime: Date.now() - startTime,
-            
+
             // SPF Analysis
             spf: {
                 exists: spfRecords.status === 'fulfilled' && spfRecords.value.length > 0,
@@ -81,7 +81,7 @@ const checkDomainWithMXToolbox = async (domain) => {
                 issues: [],
                 recommendations: []
             },
-            
+
             // DKIM Analysis
             dkim: {
                 exists: dkimRecords.status === 'fulfilled' && dkimRecords.value.length > 0,
@@ -92,7 +92,7 @@ const checkDomainWithMXToolbox = async (domain) => {
                 issues: [],
                 recommendations: []
             },
-            
+
             // DMARC Analysis
             dmarc: {
                 exists: dmarcRecords.status === 'fulfilled' && dmarcRecords.value.length > 0,
@@ -106,7 +106,7 @@ const checkDomainWithMXToolbox = async (domain) => {
                 issues: [],
                 recommendations: []
             },
-            
+
             // MX Analysis
             mx: {
                 exists: mxRecords.status === 'fulfilled' && mxRecords.value.length > 0,
@@ -119,7 +119,7 @@ const checkDomainWithMXToolbox = async (domain) => {
                 issues: [],
                 recommendations: []
             },
-            
+
             // Additional DNS Records
             dns: {
                 a: aRecords.status === 'fulfilled' ? aRecords.value : [],
@@ -148,11 +148,11 @@ const checkDomainWithMXToolbox = async (domain) => {
                     analysis.spf.issues.push('SPF record uses ?all (neutral) - consider using ~all or -all');
                 }
             });
-            
+
             if (analysis.spf.hasMultiple) {
                 analysis.spf.issues.push('Multiple SPF records detected - only one SPF record is allowed');
             }
-            
+
             if (!analysis.spf.isValid && analysis.spf.issues.length === 0) {
                 analysis.spf.recommendations.push('Consider adding ~all or -all to your SPF record for better security');
             }
@@ -190,7 +190,7 @@ const checkDomainWithMXToolbox = async (domain) => {
                 const percentageMatch = record.match(/pct=(\d+)/);
                 const ruaMatch = record.match(/rua=([^;]+)/);
                 const rufMatch = record.match(/ruf=([^;]+)/);
-                
+
                 if (policyMatch) {
                     analysis.dmarc.policy = policyMatch[1].toLowerCase();
                 }
@@ -203,13 +203,13 @@ const checkDomainWithMXToolbox = async (domain) => {
                 if (rufMatch) {
                     analysis.dmarc.ruf = rufMatch[1];
                 }
-                
+
                 if (analysis.dmarc.policy === 'none') {
                     analysis.dmarc.issues.push('DMARC policy is set to "none" - consider using "quarantine" or "reject"');
                 } else if (analysis.dmarc.policy === 'quarantine' || analysis.dmarc.policy === 'reject') {
                     analysis.dmarc.isValid = true;
                 }
-                
+
                 if (!analysis.dmarc.rua) {
                     analysis.dmarc.issues.push('No DMARC aggregate reporting address (rua) specified');
                 }
@@ -223,17 +223,17 @@ const checkDomainWithMXToolbox = async (domain) => {
         if (analysis.mx.exists) {
             // Sort by priority
             analysis.mx.records.sort((a, b) => a.priority - b.priority);
-            
+
             // Identify email provider
             const providerAnalysis = identifyEmailProvider(analysis.mx.records);
             analysis.mx.provider = providerAnalysis.provider;
             analysis.mx.providerName = providerAnalysis.name;
             analysis.mx.confidence = providerAnalysis.confidence;
-            
+
             if (analysis.mx.records.length === 1) {
                 analysis.mx.issues.push('Only one MX record found - consider adding backup MX records');
             }
-            
+
             if (analysis.mx.records.some(record => record.priority === 0)) {
                 analysis.mx.issues.push('MX record with priority 0 found - this is unusual');
             }
@@ -261,7 +261,7 @@ const checkDomainWithMXToolbox = async (domain) => {
 const checkSpamHousesEnhanced = async (domain) => {
     try {
         const startTime = Date.now();
-        
+
         // Comprehensive list of spam house DNSBLs
         const spamHouses = [
             { name: 'SpamHaus DBL', zone: 'dbl.spamhaus.org', timeout: 3000 },
@@ -275,11 +275,16 @@ const checkSpamHousesEnhanced = async (domain) => {
             { name: 'AbuseAt CBL', zone: 'cbl.abuseat.org', timeout: 3000 }
         ];
 
-        // Check all spam houses in parallel
+        // Check all spam houses with small delays to avoid rate limiting
         const results = await Promise.allSettled(
-            spamHouses.map(async (spamHouse) => {
+            spamHouses.map(async (spamHouse, index) => {
+                // Add small delay to avoid rate limiting
+                if (index > 0) {
+                    await new Promise(resolve => setTimeout(resolve, 100 * index));
+                }
                 const query = `${domain}.${spamHouse.zone}`;
-                
+                const queryStartTime = Date.now();
+
                 try {
                     const timeoutPromise = new Promise((_, reject) => {
                         setTimeout(() => reject(new Error('Timeout')), spamHouse.timeout);
@@ -288,13 +293,20 @@ const checkSpamHousesEnhanced = async (domain) => {
                     const dnsPromise = dns.resolve4(query);
                     const result = await Promise.race([dnsPromise, timeoutPromise]);
                     
+                    // Check if the result indicates the domain is actually listed
+                    // SpamHaus DBL returns 127.255.255.254 for rate limiting/blocked queries
+                    // Other IPs indicate actual listings
+                    const isRateLimited = result.includes('127.255.255.254');
+                    const isActuallyListed = !isRateLimited;
+                    
                     return {
                         name: spamHouse.name,
                         zone: spamHouse.zone,
-                        isListed: true,
+                        isListed: isActuallyListed,
                         records: result,
-                        responseTime: Date.now() - startTime,
-                        status: 'LISTED'
+                        responseTime: Date.now() - queryStartTime,
+                        status: isRateLimited ? 'RATE_LIMITED' : (isActuallyListed ? 'LISTED' : 'CLEAN'),
+                        error: isRateLimited ? 'Rate limited by SpamHaus' : (isActuallyListed ? null : 'Not listed')
                     };
                 } catch (error) {
                     // If DNS query fails, domain is likely not listed
@@ -303,7 +315,7 @@ const checkSpamHousesEnhanced = async (domain) => {
                         zone: spamHouse.zone,
                         isListed: false,
                         records: null,
-                        responseTime: Date.now() - startTime,
+                        responseTime: Date.now() - queryStartTime,
                         status: 'CLEAN',
                         error: error.message === 'Timeout' ? 'Timeout' : 'Not listed'
                     };
@@ -315,10 +327,11 @@ const checkSpamHousesEnhanced = async (domain) => {
         const listedHouses = results
             .filter(result => result.status === 'fulfilled' && result.value.isListed)
             .map(result => result.value);
-            
+
         const cleanHouses = results
             .filter(result => result.status === 'fulfilled' && !result.value.isListed)
             .map(result => result.value);
+
 
         const totalChecked = results.length;
         const listedCount = listedHouses.length;

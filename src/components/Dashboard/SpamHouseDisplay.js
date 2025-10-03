@@ -140,7 +140,7 @@ const SpamHouseDisplay = ({ spamAnalysis, domain }) => {
                                             Immediate Action Required
                                         </h5>
                                         <p className="text-sm text-red-700 mb-3">
-                                            Your domain is listed in {listedCount} spam database{listedCount !== 1 ? 's' : ''}. 
+                                            Your domain is listed in {listedCount} spam database{listedCount !== 1 ? 's' : ''}.
                                             This can significantly impact your email deliverability and reputation.
                                         </p>
                                         <div className="bg-white rounded-lg p-3 border border-red-200">
@@ -173,7 +173,7 @@ const SpamHouseDisplay = ({ spamAnalysis, domain }) => {
                                                             </span>
                                                         </div>
                                                         <p className="text-sm text-red-700 mb-2">{house.description}</p>
-                                                        
+
                                                         {house.records && house.records.length > 0 && (
                                                             <div className="mb-2">
                                                                 <p className="text-xs font-medium text-red-600 mb-1">DNS Records:</p>
@@ -198,7 +198,7 @@ const SpamHouseDisplay = ({ spamAnalysis, domain }) => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <div className="ml-4">
                                                         <a
                                                             href={house.contact || '#'}
@@ -307,28 +307,28 @@ const SpamHouseDisplay = ({ spamAnalysis, domain }) => {
                     <div>
                         <h5 className="font-medium text-yellow-700 mb-2">What are spam databases?</h5>
                         <p className="text-yellow-600">
-                            Spam databases (also called blacklists) are lists of domains and IP addresses 
+                            Spam databases (also called blacklists) are lists of domains and IP addresses
                             that have been identified as sources of spam or malicious activity.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-yellow-700 mb-2">Why does it matter?</h5>
                         <p className="text-yellow-600">
-                            If your domain is listed, email providers may block or filter your emails, 
+                            If your domain is listed, email providers may block or filter your emails,
                             significantly reducing your email deliverability.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-yellow-700 mb-2">How to get removed:</h5>
                         <p className="text-yellow-600">
-                            Contact each spam database directly through their website. Most have 
+                            Contact each spam database directly through their website. Most have
                             removal request forms and clear instructions.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-yellow-700 mb-2">Prevention:</h5>
                         <p className="text-yellow-600">
-                            Follow email best practices, use proper authentication (SPF, DKIM, DMARC), 
+                            Follow email best practices, use proper authentication (SPF, DKIM, DMARC),
                             and maintain a good sending reputation.
                         </p>
                     </div>

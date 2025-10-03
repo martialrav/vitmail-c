@@ -834,7 +834,7 @@ const DomainChecker = () => {
                                             <h3 className="text-xl font-bold text-red-800 mb-4 text-center">
                                                 🚨 Spam Database Analysis
                                             </h3>
-                                            <SpamHouseDisplay 
+                                            <SpamHouseDisplay
                                                 spamAnalysis={{
                                                     listedHouses: result.checks.flaggedBlacklists || [],
                                                     cleanHouses: result.checks.cleanBlacklists || [],
@@ -845,6 +845,15 @@ const DomainChecker = () => {
                                                 }}
                                                 domain={result.domain}
                                             />
+                                            {/* Debug info - remove this after fixing */}
+                                            <div className="mt-4 p-4 bg-gray-100 rounded-lg text-xs">
+                                                <strong>Debug Info:</strong><br />
+                                                Domain: {result.domain}<br />
+                                                Flagged Count: {result.checks.blacklistSummary?.flaggedCount || 0}<br />
+                                                Clean Count: {result.checks.blacklistSummary?.cleanCount || 0}<br />
+                                                Flagged Blacklists: {JSON.stringify(result.checks.flaggedBlacklists || [])}<br />
+                                                Spam Status: {result.spamHouseStatus}
+                                            </div>
                                         </div>
                                     </AnimatedCard>
                                 </div>
