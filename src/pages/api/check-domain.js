@@ -5,6 +5,11 @@ import {
     checkDNSRecordsFree,
     checkEmailReputationFree
 } from '@/lib/domain-health/free-apis';
+import {
+    checkDomainWithMXToolbox,
+    checkSpamHousesEnhanced,
+    generateRecommendations
+} from '@/lib/domain-health/mxtoolbox-api';
 
 // Public API endpoint for domain health checking (no authentication required)
 export default async function handler(req, res) {
@@ -28,62 +33,119 @@ export default async function handler(req, res) {
         let result;
 
         if (useRealData) {
-            // Use real free APIs
-            const [spamReputation, dnsRecords] = await Promise.all([
-                checkEmailReputationFree(domain),
-                checkDNSRecordsFree(domain)
+            // Use enhanced MXToolbox-style analysis
+            const [domainAnalysis, spamAnalysis] = await Promise.all([
+                checkDomainWithMXToolbox(domain),
+                checkSpamHousesEnhanced(domain)
             ]);
 
-            // Calculate health score based on real data
+            // Generate recommendations
+            const recommendations = generateRecommendations(domainAnalysis);
+
+            // Calculate health score based on comprehensive analysis
             let healthScore = 100;
-            if (spamReputation.isListed) healthScore -= 30;
-            if (!dnsRecords.spf.exists) healthScore -= 20;
-            if (dnsRecords.spf.hasMultiple) healthScore -= 10; // Penalty for multiple SPF records
-            if (!dnsRecords.dkim.exists) healthScore -= 20;
-            if (!dnsRecords.dmarc.exists) healthScore -= 15;
-            if (dnsRecords.dmarc.policy === 'none') healthScore -= 5; // Penalty for none policy
-            if (!dnsRecords.mx.exists) healthScore -= 15;
+            
+            // Spam house penalties
+            if (spamAnalysis.isListed) healthScore -= 30;
+            
+            // DNS record penalties
+            if (!domainAnalysis.spf.exists) healthScore -= 20;
+            if (domainAnalysis.spf.hasMultiple) healthScore -= 10;
+            if (domainAnalysis.spf.issues.length > 0) healthScore -= 5;
+            
+            if (!domainAnalysis.dkim.exists) healthScore -= 20;
+            if (domainAnalysis.dkim.issues.length > 0) healthScore -= 5;
+            
+            if (!domainAnalysis.dmarc.exists) healthScore -= 15;
+            if (domainAnalysis.dmarc.policy === 'none') healthScore -= 5;
+            if (domainAnalysis.dmarc.issues.length > 0) healthScore -= 5;
+            
+            if (!domainAnalysis.mx.exists) healthScore -= 15;
+            if (domainAnalysis.mx.issues.length > 0) healthScore -= 5;
 
             result = {
                 domain,
                 healthScore: Math.max(0, healthScore),
                 lastChecked: new Date().toISOString(),
-                spamHouseStatus: spamReputation.isListed ? 'FLAGGED' : 'CLEAN',
-                spfRecord: dnsRecords.spf.exists,
-                dkimRecord: dnsRecords.dkim.exists,
-                dmarcRecord: dnsRecords.dmarc.exists,
-                mxRecords: dnsRecords.mx.exists,
+                spamHouseStatus: spamAnalysis.isListed ? 'FLAGGED' : 'CLEAN',
+                spfRecord: domainAnalysis.spf.exists,
+                dkimRecord: domainAnalysis.dkim.exists,
+                dmarcRecord: domainAnalysis.dmarc.exists,
+                mxRecords: domainAnalysis.mx.exists,
                 isHealthy: healthScore >= 70,
                 checks: {
-                    // Legacy format for backward compatibility
-                    spamHouse: [
-                        { spamHouse: 'SPAMHAUS', isListed: spamReputation.details.spamhaus.isListed, reason: spamReputation.details.spamhaus.reason },
-                        { spamHouse: 'SURBL', isListed: spamReputation.details.surbl.isListed, reason: spamReputation.details.surbl.reason },
-                        { spamHouse: 'URIBL', isListed: spamReputation.details.uribl.isListed, reason: spamReputation.details.uribl.reason }
-                    ],
-                    // Enhanced blacklist data
-                    blacklistSummary: {
-                        flaggedCount: spamReputation.flaggedCount,
-                        cleanCount: spamReputation.cleanCount,
-                        totalChecked: spamReputation.totalChecked,
-                        errorCount: spamReputation.errorCount,
-                        avgResponseTime: spamReputation.avgResponseTime,
-                        confidence: spamReputation.summary.confidence
-                    },
-                    flaggedBlacklists: spamReputation.flaggedBlacklists,
-                    cleanBlacklists: spamReputation.cleanBlacklists,
-                    errors: spamReputation.errors,
-                    // Legacy format
-                    flaggedHouses: spamReputation.flaggedBlacklists.map(bl => ({
-                        name: bl.name,
-                        reason: bl.description,
-                        contact: bl.contact
+                    // Enhanced spam house data
+                    spamHouse: spamAnalysis.listedHouses.map(house => ({
+                        spamHouse: house.name,
+                        isListed: true,
+                        reason: `Listed in ${house.name}`,
+                        records: house.records,
+                        responseTime: house.responseTime
                     })),
-                    spf: dnsRecords.spf,
-                    dkim: dnsRecords.dkim,
-                    dmarc: dnsRecords.dmarc,
-                    mx: dnsRecords.mx
+                    
+                    // Comprehensive blacklist summary
+                    blacklistSummary: {
+                        flaggedCount: spamAnalysis.listedCount,
+                        cleanCount: spamAnalysis.cleanCount,
+                        totalChecked: spamAnalysis.totalChecked,
+                        errorCount: 0,
+                        avgResponseTime: spamAnalysis.responseTime,
+                        confidence: spamAnalysis.confidence
+                    },
+                    
+                    // Detailed blacklist information
+                    flaggedBlacklists: spamAnalysis.listedHouses,
+                    cleanBlacklists: spamAnalysis.cleanHouses,
+                    errors: [],
+                    
+                    // Legacy format for backward compatibility
+                    flaggedHouses: spamAnalysis.listedHouses.map(house => ({
+                        name: house.name,
+                        reason: `Listed in ${house.name}`,
+                        contact: 'https://www.spamhaus.org/contact/'
+                    })),
+                    
+                    // Enhanced DNS records with analysis
+                    spf: {
+                        ...domainAnalysis.spf,
+                        isValid: domainAnalysis.spf.isValid,
+                        issues: domainAnalysis.spf.issues,
+                        recommendations: domainAnalysis.spf.recommendations
+                    },
+                    dkim: {
+                        ...domainAnalysis.dkim,
+                        isValid: domainAnalysis.dkim.isValid,
+                        issues: domainAnalysis.dkim.issues,
+                        recommendations: domainAnalysis.dkim.recommendations
+                    },
+                    dmarc: {
+                        ...domainAnalysis.dmarc,
+                        isValid: domainAnalysis.dmarc.isValid,
+                        issues: domainAnalysis.dmarc.issues,
+                        recommendations: domainAnalysis.dmarc.recommendations
+                    },
+                    mx: {
+                        ...domainAnalysis.mx,
+                        isValid: domainAnalysis.mx.isValid,
+                        issues: domainAnalysis.mx.issues,
+                        recommendations: domainAnalysis.mx.recommendations
+                    },
+                    
+                    // Additional DNS records
+                    dns: domainAnalysis.dns
                 },
+                
+                // Recommendations and educational content
+                recommendations: recommendations,
+                
+                // Analysis metadata
+                analysis: {
+                    responseTime: domainAnalysis.responseTime + spamAnalysis.responseTime,
+                    totalChecks: spamAnalysis.totalChecked + 4, // DNS checks
+                    confidence: spamAnalysis.confidence,
+                    provider: domainAnalysis.mx.providerName
+                },
+                
                 realData: true
             };
         } else {

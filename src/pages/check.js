@@ -7,6 +7,8 @@ import { LandingLayout } from '@/layouts/index';
 import Button from '@/components/Button/index';
 import Card from '@/components/Card/index';
 import Modal from '@/components/Modal/index';
+import DNSRecordsDisplay from '@/components/Dashboard/DNSRecordsDisplay';
+import RecommendationsDisplay from '@/components/Dashboard/RecommendationsDisplay';
 
 // Animation variants
 const containerVariants = {
@@ -870,8 +872,28 @@ const DomainChecker = () => {
                                     )}
                                 </div>
 
+                                {/* DNS Records Analysis */}
+                                <AnimatedCard className="bg-gradient-to-br from-blue-50 to-indigo-50" delay={1100}>
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold text-blue-800 mb-4 text-center">
+                                            🔍 Detailed DNS Analysis
+                                        </h3>
+                                        <DNSRecordsDisplay checks={result.checks} domain={result.domain} />
+                                    </div>
+                                </AnimatedCard>
+
+                                {/* Recommendations */}
+                                <AnimatedCard className="bg-gradient-to-br from-green-50 to-emerald-50" delay={1200}>
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold text-green-800 mb-4 text-center">
+                                            💡 Security Recommendations
+                                        </h3>
+                                        <RecommendationsDisplay recommendations={result.recommendations} domain={result.domain} />
+                                    </div>
+                                </AnimatedCard>
+
                                 {/* Performance Trend Chart */}
-                                <AnimatedCard className="bg-gradient-to-br from-purple-50 to-pink-50" delay={1100}>
+                                <AnimatedCard className="bg-gradient-to-br from-purple-50 to-pink-50" delay={1300}>
                                     <div className="p-6">
                                         <h3 className="text-xl font-bold text-purple-800 mb-4 text-center">
                                             📈 Domain Health Trend
@@ -901,7 +923,7 @@ const DomainChecker = () => {
                                 </AnimatedCard>
 
                                 {/* Action Buttons */}
-                                <AnimatedCard className="bg-gradient-to-r from-vitamin-50 to-orange-50" delay={1200}>
+                                <AnimatedCard className="bg-gradient-to-r from-vitamin-50 to-orange-50" delay={1400}>
                                     <div className="p-6">
                                         <div className="flex flex-col space-y-4">
                                             <motion.button
