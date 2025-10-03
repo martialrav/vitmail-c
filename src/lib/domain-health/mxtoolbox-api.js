@@ -294,10 +294,24 @@ const checkSpamHousesEnhanced = async (domain) => {
                     const result = await Promise.race([dnsPromise, timeoutPromise]);
                     
                     // Check if the result indicates the domain is actually listed
-                    // SpamHaus DBL returns 127.255.255.254 for rate limiting/blocked queries
-                    // Other IPs indicate actual listings
+                    // Different spam houses use different "not listed" response codes
+                    const notListedResponses = [
+                        '127.255.255.254', // SpamHaus rate limiting
+                        '127.0.0.1',       // URIBL, SURBL "not listed"
+                        '127.0.0.2',       // Some blacklists "not listed"
+                        '127.0.0.3',       // Some blacklists "not listed"
+                        '127.0.0.4',       // Some blacklists "not listed"
+                        '127.0.0.5',       // Some blacklists "not listed"
+                        '127.0.0.6',       // Some blacklists "not listed"
+                        '127.0.0.7',       // Some blacklists "not listed"
+                        '127.0.0.8',       // Some blacklists "not listed"
+                        '127.0.0.9',       // Some blacklists "not listed"
+                        '127.0.0.10'       // Some blacklists "not listed"
+                    ];
+                    
+                    const isNotListed = notListedResponses.some(ip => result.includes(ip));
                     const isRateLimited = result.includes('127.255.255.254');
-                    const isActuallyListed = !isRateLimited;
+                    const isActuallyListed = !isNotListed;
                     
                     return {
                         name: spamHouse.name,
