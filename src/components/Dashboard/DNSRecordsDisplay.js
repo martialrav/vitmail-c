@@ -206,7 +206,7 @@ const DNSRecordsDisplay = ({ checks, domain }) => {
                     <div className="bg-gray-50 rounded-lg p-3">
                         <h4 className="text-sm font-semibold text-gray-800 mb-2">What is DKIM?</h4>
                         <p className="text-sm text-gray-600">
-                            DKIM (DomainKeys Identified Mail) adds a digital signature to your emails, proving they came from your domain and haven't been tampered with.
+                            DKIM (DomainKeys Identified Mail) adds a digital signature to your emails, proving they came from your domain and haven&apos;t been tampered with.
                         </p>
                     </div>
 
@@ -275,7 +275,7 @@ const DNSRecordsDisplay = ({ checks, domain }) => {
                     <div className="bg-gray-50 rounded-lg p-3">
                         <h4 className="text-sm font-semibold text-gray-800 mb-2">What are MX Records?</h4>
                         <p className="text-sm text-gray-600">
-                            MX records tell other servers where to deliver emails for your domain. Without them, you can't receive emails.
+                            MX records tell other servers where to deliver emails for your domain. Without them, you can&apos;t receive emails.
                         </p>
                     </div>
 

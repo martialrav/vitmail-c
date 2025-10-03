@@ -82,7 +82,7 @@ const RecommendationsDisplay = ({ recommendations, domain }) => {
                     <div>
                         <h3 className="text-lg font-semibold text-green-800">Great Job! 🎉</h3>
                         <p className="text-green-700">
-                            Your domain's email infrastructure looks healthy. No critical issues found!
+                            Your domain&apos;s email infrastructure looks healthy. No critical issues found!
                         </p>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ const RecommendationsDisplay = ({ recommendations, domain }) => {
                     <div>
                         <h3 className="text-lg font-semibold text-blue-800">Domain Health Recommendations</h3>
                         <p className="text-blue-700">
-                            Here's how to strengthen your domain's email infrastructure
+                            Here&apos;s how to strengthen your domain&apos;s email infrastructure
                         </p>
                     </div>
                 </div>
@@ -204,8 +204,8 @@ const RecommendationsDisplay = ({ recommendations, domain }) => {
                                                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                                                     <h6 className="font-medium text-yellow-800 mb-2">💡 Pro Tip:</h6>
                                                     <p className="text-sm text-yellow-700">
-                                                        You can add DNS records through your domain registrar or hosting provider's control panel.
-                                                        Look for "DNS Management" or "DNS Settings" in your account.
+                                                        You can add DNS records through your domain registrar or hosting provider&apos;s control panel.
+                                                        Look for &quot;DNS Management&quot; or &quot;DNS Settings&quot; in your account.
                                                     </p>
                                                 </div>
                                             )}
@@ -301,26 +301,26 @@ const RecommendationsDisplay = ({ recommendations, domain }) => {
                         <h5 className="font-medium text-purple-700 mb-2">SPF (Sender Policy Framework)</h5>
                         <p className="text-purple-600">
                             Prevents others from sending emails that appear to come from your domain.
-                            It's like a guest list for your email server.
+                            It&apos;s like a guest list for your email server.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-purple-700 mb-2">DKIM (DomainKeys Identified Mail)</h5>
                         <p className="text-purple-600">
-                            Adds a digital signature to your emails, proving they're authentic and haven't been tampered with.
+                            Adds a digital signature to your emails, proving they&apos;re authentic and haven&apos;t been tampered with.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-purple-700 mb-2">DMARC (Domain-based Message Authentication)</h5>
                         <p className="text-purple-600">
                             Tells receiving servers what to do with emails that fail SPF or DKIM checks.
-                            It's your domain's email security policy.
+                            It&apos;s your domain&apos;s email security policy.
                         </p>
                     </div>
                     <div>
                         <h5 className="font-medium text-purple-700 mb-2">MX Records (Mail Exchange)</h5>
                         <p className="text-purple-600">
-                            Directs incoming emails to your mail server. Without them, you can't receive emails at your domain.
+                            Directs incoming emails to your mail server. Without them, you can&apos;t receive emails at your domain.
                         </p>
                     </div>
                 </div>
