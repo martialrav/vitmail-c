@@ -9,6 +9,7 @@ import Card from '@/components/Card/index';
 import Modal from '@/components/Modal/index';
 import DNSRecordsDisplay from '@/components/Dashboard/DNSRecordsDisplay';
 import RecommendationsDisplay from '@/components/Dashboard/RecommendationsDisplay';
+import SpamHouseDisplay from '@/components/Dashboard/SpamHouseDisplay';
 
 // Animation variants
 const containerVariants = {
@@ -804,7 +805,7 @@ const DomainChecker = () => {
                                 </div>
 
                                 {/* Charts Section */}
-                                <div className={`grid gap-6 ${result.checks.blacklistSummary && result.checks.blacklistSummary.flaggedCount > 0 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+                                <div className="grid gap-6 grid-cols-1">
                                     {/* Email Authentication Chart */}
                                     <AnimatedCard className="bg-gradient-to-br from-blue-50 to-indigo-50" delay={900}>
                                         <div className="p-6">
@@ -827,49 +828,25 @@ const DomainChecker = () => {
                                         </div>
                                     </AnimatedCard>
 
-                                    {/* Blacklist Analysis Chart - Only show when there are flagged results */}
-                                    {result.checks.blacklistSummary && result.checks.blacklistSummary.flaggedCount > 0 && (
-                                        <AnimatedCard className="bg-gradient-to-br from-red-50 to-pink-50" delay={1000}>
-                                            <div className="p-6">
-                                                <h3 className="text-xl font-bold text-red-800 mb-4 text-center">
-                                                    🚨 Spam Database Alerts
-                                                </h3>
-                                                <ResponsiveContainer width="100%" height={300}>
-                                                    <PieChart>
-                                                        <Pie
-                                                            data={prepareBlacklistData(result.checks.blacklistSummary)}
-                                                            cx="50%"
-                                                            cy="50%"
-                                                            innerRadius={60}
-                                                            outerRadius={120}
-                                                            paddingAngle={5}
-                                                            dataKey="value"
-                                                        >
-                                                            {prepareBlacklistData(result.checks.blacklistSummary).map((entry, index) => (
-                                                                <Cell key={`cell-${index}`} fill={entry.fill} />
-                                                            ))}
-                                                        </Pie>
-                                                        <Tooltip content={customTooltip} />
-                                                    </PieChart>
-                                                </ResponsiveContainer>
-                                                <div className="flex justify-center space-x-4 mt-4">
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                                        <span className="text-sm text-green-700">Clean ({result.checks.blacklistSummary.cleanCount})</span>
-                                                    </div>
-                                                    <div className="flex items-center space-x-2">
-                                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                                        <span className="text-sm text-red-700">Flagged ({result.checks.blacklistSummary.flaggedCount})</span>
-                                                    </div>
-                                                </div>
-                                                <div className="mt-4 p-3 bg-red-100 rounded-lg">
-                                                    <p className="text-sm text-red-800 font-medium text-center">
-                                                        ⚠️ Your domain was found in {result.checks.blacklistSummary.flaggedCount} spam database{result.checks.blacklistSummary.flaggedCount !== 1 ? 's' : ''}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </AnimatedCard>
-                                    )}
+                                    {/* Detailed Spam House Analysis */}
+                                    <AnimatedCard className="bg-gradient-to-br from-red-50 to-pink-50" delay={1000}>
+                                        <div className="p-6">
+                                            <h3 className="text-xl font-bold text-red-800 mb-4 text-center">
+                                                🚨 Spam Database Analysis
+                                            </h3>
+                                            <SpamHouseDisplay 
+                                                spamAnalysis={{
+                                                    listedHouses: result.checks.flaggedBlacklists || [],
+                                                    cleanHouses: result.checks.cleanBlacklists || [],
+                                                    totalChecked: result.checks.blacklistSummary?.totalChecked || 0,
+                                                    listedCount: result.checks.blacklistSummary?.flaggedCount || 0,
+                                                    cleanCount: result.checks.blacklistSummary?.cleanCount || 0,
+                                                    responseTime: result.checks.blacklistSummary?.avgResponseTime || 0
+                                                }}
+                                                domain={result.domain}
+                                            />
+                                        </div>
+                                    </AnimatedCard>
                                 </div>
 
                                 {/* DNS Records Analysis */}
