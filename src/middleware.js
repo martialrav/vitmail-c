@@ -5,7 +5,7 @@ const middleware = (req) => {
   const url = req.nextUrl.clone();
   const { pathname } = req.nextUrl;
   const hostname = req.headers.get('host');
-  
+
   // Don't rewrite if it's already a _sites path
   if (pathname.startsWith(`/_sites`)) {
     return NextResponse.next();
@@ -21,8 +21,18 @@ const middleware = (req) => {
     return NextResponse.next();
   }
 
+  // Define your main domains
+  const mainDomains = [
+    'localhost:3000',
+    'vitmail-c.com',
+    'www.vitmail-c.com'
+  ];
+
+  // Check if it's a main domain
+  const isMainDomain = mainDomains.includes(hostname) || hostname.includes('vercel.app');
+
   // Only rewrite if it's a subdomain (not the main domain)
-  if (hostname !== host && !hostname.includes('vercel.app')) {
+  if (!isMainDomain && hostname !== host) {
     const currentHost = hostname.replace(`.${host}`, '');
     url.pathname = `/_sites/${currentHost}${pathname}`;
     return NextResponse.rewrite(url);

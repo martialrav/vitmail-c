@@ -76,12 +76,14 @@ const Hero = () => {
                 ⚡ Vitamin Features
               </a>
             </nav>
-            <Link
-              href={sessionStatus === 'authenticated' ? '/account' : '/auth/login'}
+            <a
+              href="https://d8fd83cd.sibforms.com/serve/MUIFAIflJOCZJb8ZbZLtgD1cEvJ114KTkFSOj5CPKO9rQIK4Wb7K__6BgVIIze59kYzlCeXruQa-fgPcYGsgCLeS-88HHFlq-NaWe8L6yRh9s_A_rQziEYsjoxVG-rmidMUCJnVrUDYWDinwv0sYDcRQG0WSaK9CYvGrRlmraNzkgyiz3gwVSdFpwCtpKc7rwATOac3ukJp3d6Tu"
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full px-6 py-2 text-center text-white bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-lg hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 font-semibold"
             >
-              {sessionStatus === 'authenticated' ? '🏠 Health Dashboard' : '🔐 Get Your Dose'}
-            </Link>
+              🚀 Join Pro Waitlist
+            </a>
           </div>
         </header>
 
@@ -153,12 +155,14 @@ const Hero = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           </Link>
 
-          <Link
-            href="/check"
+          <a
+            href="https://d8fd83cd.sibforms.com/serve/MUIFAIflJOCZJb8ZbZLtgD1cEvJ114KTkFSOj5CPKO9rQIK4Wb7K__6BgVIIze59kYzlCeXruQa-fgPcYGsgCLeS-88HHFlq-NaWe8L6yRh9s_A_rQziEYsjoxVG-rmidMUCJnVrUDYWDinwv0sYDcRQG0WSaK9CYvGrRlmraNzkgyiz3gwVSdFpwCtpKc7rwATOac3ukJp3d6Tu"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group px-12 py-4 text-lg font-bold text-orange-600 bg-white border-2 border-orange-300 rounded-2xl shadow-lg hover:shadow-xl hover:bg-orange-50 transform hover:scale-105 transition-all duration-300"
           >
-            <span>💊 Get Prescription</span>
-          </Link>
+            <span>🚀 Join Pro Waitlist</span>
+          </a>
         </div>
 
         {/* Fun Health Tips Ticker */}
